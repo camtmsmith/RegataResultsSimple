@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rowing Regatta Timing System</title>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    .header { background: #1e40af; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 24px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #64748b; color: white; }
+    .btn-secondary:hover { background: #475569; }
+    .btn-success { background: #16a34a; color: white; }
+    .btn-success:hover { background: #15803d; }
+    .btn-danger { background: #dc2626; color: white; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-icon { padding: 8px 12px; }
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #374151; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+    .station-list { display: grid; gap: 10px; }
+    .station-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; }
+    .timing-station { text-align: center; }
+    .time-display { font-size: 48px; font-weight: bold; color: #1e40af; margin: 20px 0; font-family: 'Courier New', monospace; }
+    .record-btn { width: 100%; padding: 30px; font-size: 24px; margin: 10px 0; }
+    .lane-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; margin: 20px 0; }
+    .lane-btn { padding: 20px; font-size: 18px; }
+    .records-list { max-height: 400px; overflow-y: auto; }
+    .record-item { display: grid; grid-template-columns: 80px 60px 120px 100px; gap: 10px; padding: 10px; border-bottom: 1px solid #e5e7eb; align-items: center; }
+    .record-item.deleted { opacity: 0.5; text-decoration: line-through; }
+    .record-item input { padding: 5px; border: 1px solid #d1d5db; border-radius: 4px; }
+    .results-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .results-table th, .results-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    .results-table th { background: #f9fafb; font-weight: 600; color: #374151; position: sticky; top: 0; }
+    .results-table tr:hover { background: #f9fafb; }
+    .results-table td { cursor: pointer; }
+    .results-table td:hover { background: #e0e7ff; }
+    .race-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f9fafb; border-radius: 6px; margin-bottom: 10px; }
+    .toggle { position: relative; display: inline-block; width: 60px; height: 30px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: 0.4s; border-radius: 30px; }
+    .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #16a34a; }
+    input:checked + .slider:before { transform: translateX(30px); }
+    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; border-radius: 8px; padding: 30px; max-width: 400px; width: 90%; }
+    .modal-buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+    .context-menu { position: fixed; background: white; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1001; min-width: 150px; }
+    .context-menu-item { padding: 10px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .context-menu-item:hover { background: #f9fafb; }
+    .nav-buttons { display: flex; gap: 10px; }
+    .sprint-head-selector { display: flex; gap: 10px; margin: 20px 0; }
+    .mode-btn { flex: 1; padding: 15px; font-size: 16px; }
+    .mode-btn.active { background: #1e40af; color: white; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const RegattaTimingSystem = () => {
+      const [page, setPage] = useState('main');
+      const [stations, setStations] = useState(['start', '500', '1000', '1500', 'finish']);
+      const [numLanes, setNumLanes] = useState(6);
+      const [twoStepTiming, setTwoStepTiming] = useState(false);
+      const [currentStation, setCurrentStation] = useState('');
+      const [raceMode, setRaceMode] = useState('sprint'); // sprint or head
+      const [currentRace, setCurrentRace] = useState(1);
+      const [records, setRecords] = useState([]);
+      const [pendingTimes, setPendingTimes] = useState([]);
+      const [currentTime, setCurrentTime] = useState('');
+      const [showClearConfirm, setShowClearConfirm] = useState(false);
+      const [copiedTime, setCopiedTime] = useState(null);
+      const [contextMenu, setContextMenu] = useState(null);
+      const [officialRaces, setOfficialRaces] = useState(new Set());
+
+      useEffect(() => {
+        const savedData = localStorage.getItem('regattaData');
+        if (savedData) {
+          const data = JSON.parse(savedData);
+          setStations(data.stations || ['start', '500', '1000', '1500', 'finish']);
+          setNumLanes(data.numLanes || 6);
+          setTwoStepTiming(data.twoStepTiming || false);
+          setRecords(data.records || []);
+          setCurrentRace(data.currentRace || 1);
+          setRaceMode(data.raceMode || 'sprint');
+          setOfficialRaces(new Set(data.officialRaces || []));
+        }
+      }, []);
+
+      useEffect(() => {
+        const data = {
+          stations,
+          numLanes,
+          twoStepTiming,
+          records,
+          currentRace,
+          raceMode,
+          officialRaces: Array.from(officialRaces)
+        };
+        localStorage.setItem('regattaData', JSON.stringify(data));
+      }, [stations, numLanes, twoStepTiming, records, currentRace, raceMode, officialRaces]);
+
+      useEffect(() => {
+        const timer = setInterval(() => {
+          const now = new Date();
+          setCurrentTime(formatTime(now));
+        }, 10);
+        return () => clearInterval(timer);
+      }, []);
+
+      useEffect(() => {
+        const handleClick = () => setContextMenu(null);
+        document.addEventListener('click', handleClick);
+        return () => document.removeEventListener('click', handleClick);
+      }, []);
+
+      const formatTime = (date) => {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        const ms = String(date.getMilliseconds()).padStart(3, '0').slice(0, 2);
+        return `${hours}:${minutes}:${seconds}.${ms}`;
+      };
+
+      const addStation = () => {
+        const name = prompt('Enter station name:');
+        if (name && !stations.includes(name)) {
+          const newStations = [...stations];
+          newStations.splice(stations.length - 1, 0, name);
+          setStations(newStations);
+        }
+      };
+
+      const deleteStation = (idx) => {
+        if (stations[idx] !== 'start' && stations[idx] !== 'finish') {
+          setStations(stations.filter((_, i) => i !== idx));
+        }
+      };
+
+      const renameStation = (idx) => {
+        if (stations[idx] !== 'start' && stations[idx] !== 'finish') {
+          const name = prompt('Enter new name:', stations[idx]);
+          if (name) {
+            const newStations = [...stations];
+            newStations[idx] = name;
+            setStations(newStations);
+          }
+        }
+      };
+
+      const recordTime = (lane = null) => {
+        const timestamp = new Date().toISOString();
+        
+        if (twoStepTiming && lane === null) {
+          setPendingTimes([...pendingTimes, { timestamp, race: currentRace }]);
+        } else {
+          const actualLane = lane || (currentStation === 'start' && raceMode === 'sprint' ? '*' : '1');
+          const newRecord = {
+            id: Date.now() + Math.random(),
+            station: currentStation,
+            race: currentRace,
+            lane: actualLane,
+            timestamp,
+            deleted: false
+          };
+          setRecords([...records, newRecord]);
+          
+          if (currentStation === 'start' && raceMode === 'sprint' && !twoStepTiming) {
+            setCurrentRace(currentRace + 1);
+          }
+        }
+      };
+
+      const assignLane = (lane) => {
+        if (pendingTimes.length > 0) {
+          const pending = pendingTimes[0];
+          const newRecord = {
+            id: Date.now() + Math.random(),
+            station: currentStation,
+            race: pending.race,
+            lane: String(lane),
+            timestamp: pending.timestamp,
+            deleted: false
+          };
+          setRecords([...records, newRecord]);
+          setPendingTimes(pendingTimes.slice(1));
+        }
+      };
+
+      const updateRecord = (id, field, value) => {
+        setRecords(records.map(r => r.id === id ? { ...r, [field]: value } : r));
+      };
+
+      const deleteRecord = (id) => {
+        setRecords(records.map(r => r.id === id ? { ...r, deleted: true } : r));
+      };
+
+      const undoDelete = (id) => {
+        setRecords(records.map(r => r.id === id ? { ...r, deleted: false } : r));
+      };
+
+      const clearResults = () => {
+        setRecords([]);
+        setCurrentRace(1);
+        setPendingTimes([]);
+        setShowClearConfirm(false);
+      };
+
+      const calculateResults = () => {
+        const races = {};
+        const activeRecords = records.filter(r => !r.deleted);
+        
+        activeRecords.forEach(record => {
+          if (!races[record.race]) {
+            races[record.race] = {};
+          }
+          const lane = record.lane === '*' ? 'all' : record.lane;
+          if (!races[record.race][lane]) {
+            races[record.race][lane] = {};
+          }
+          races[record.race][lane][record.station] = record.timestamp;
+        });
+
+        const results = [];
+        Object.keys(races).forEach(race => {
+          Object.keys(races[race]).forEach(lane => {
+            if (lane === 'all') return;
+            
+            const times = races[race][lane];
+            const startTime = times.start || races[race].all?.start;
+            
+            if (raceMode === 'sprint' && !times.finish) {
+              return;
+            }
+            
+            if (startTime) {
+              const result = { race, lane, times: {}, raceTimes: {} };
+              stations.forEach(station => {
+                if (times[station] || (station === 'start' && startTime)) {
+                  const time = station === 'start' && !times[station] ? startTime : times[station];
+                  result.times[station] = time;
+                  if (time) {
+                    const diff = new Date(time) - new Date(startTime);
+                    result.raceTimes[station] = diff / 1000;
+                  }
+                }
+              });
+              results.push(result);
+            }
+          });
+        });
+
+        // Calculate placings
+        const raceGroups = {};
+        results.forEach(r => {
+          if (!raceGroups[r.race]) raceGroups[r.race] = [];
+          raceGroups[r.race].push(r);
+        });
+
+        Object.keys(raceGroups).forEach(race => {
+          const sorted = raceGroups[race].sort((a, b) => {
+            const aTime = a.raceTimes.finish || 0;
+            const bTime = b.raceTimes.finish || 0;
+            return aTime - bTime;
+          });
+          
+          sorted.forEach((r, idx) => {
+            r.place = idx + 1;
+            if (idx > 0) {
+              const diff = r.raceTimes.finish - sorted[idx - 1].raceTimes.finish;
+              r.margin = diff > 0 ? diff.toFixed(2) : '';
+            }
+          });
+        });
+
+        return results;
+      };
+
+      const handleContextMenu = (e, race, lane, station) => {
+        e.preventDefault();
+        if (officialRaces.has(race)) return;
+        
+        setContextMenu({
+          x: e.clientX,
+          y: e.clientY,
+          race,
+          lane,
+          station
+        });
+      };
+
+      const copyTime = () => {
+        if (contextMenu) {
+          const results = calculateResults();
+          const result = results.find(r => r.race === contextMenu.race && r.lane === contextMenu.lane);
+          if (result?.times[contextMenu.station]) {
+            setCopiedTime(result.times[contextMenu.station]);
+          }
+        }
+        setContextMenu(null);
+      };
+
+      const pasteTime = () => {
+        if (contextMenu && copiedTime) {
+          const record = records.find(r => 
+            r.race === contextMenu.race && 
+            r.lane === contextMenu.lane && 
+            r.station === contextMenu.station &&
+            !r.deleted
+          );
+          
+          if (record) {
+            updateRecord(record.id, 'timestamp', copiedTime);
+          } else {
+            const newRecord = {
+              id: Date.now() + Math.random(),
+              station: contextMenu.station,
+              race: contextMenu.race,
+              lane: contextMenu.lane,
+              timestamp: copiedTime,
+              deleted: false
+            };
+            setRecords([...records, newRecord]);
+          }
+        }
+        setContextMenu(null);
+      };
+
+      const toggleOfficial = (race) => {
+        const newOfficial = new Set(officialRaces);
+        if (newOfficial.has(race)) {
+          newOfficial.delete(race);
+        } else {
+          newOfficial.add(race);
+        }
+        setOfficialRaces(newOfficial);
+      };
+
+      const exportRace = (race) => {
+        const results = calculateResults().filter(r => r.race === race);
+        let text = `Race ${race} - Official Results\n`;
+        text += `Generated: ${new Date().toLocaleString()}\n\n`;
+        text += `Place\tLane\t${stations.join('\t')}\tMargin\n`;
+        
+        results.sort((a, b) => (a.place || 999) - (b.place || 999)).forEach(r => {
+          text += `${r.place || '-'}\t${r.lane}\t`;
+          stations.forEach(s => {
+            const time = r.raceTimes[s] ? r.raceTimes[s].toFixed(2) : '-';
+            text += `${time}\t`;
+          });
+          text += `${r.margin || '-'}\n`;
+        });
+
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `race_${race}_results.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      // SETUP PAGE
+      if (page === 'setup') {
+        return (
+          <div className="container">
+            <div className="header">
+              <h1>Setup</h1>
+              <button className="btn btn-secondary" onClick={() => setPage('main')}>Back</button>
+            </div>
+
+            <div className="card">
+              <h2 style={{marginBottom: '20px'}}>Timing Stations</h2>
+              <div className="station-list">
+                {stations.map((station, idx) => (
+                  <div key={idx} className="station-item">
+                    <span style={{fontWeight: 600}}>{station}</span>
+                    <div style={{display: 'flex', gap: '5px'}}>
+                      {station !== 'start' && station !== 'finish' && (
+                        <>
+                          <button className="btn btn-secondary btn-icon" onClick={() => renameStation(idx)}>✏️</button>
+                          <button className="btn btn-danger btn-icon" onClick={() => deleteStation(idx)}>🗑️</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button className="btn btn-primary" style={{marginTop: '15px'}} onClick={addStation}>+ Add Station</button>
+            </div>
+
+            <div className="card">
+              <div className="form-group">
+                <label>Number of Lanes</label>
+                <input type="number" value={numLanes} onChange={(e) => setNumLanes(parseInt(e.target.value))} min="1" max="12" />
+              </div>
+
+              <div className="form-group">
+                <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                  <input type="checkbox" checked={twoStepTiming} onChange={(e) => setTwoStepTiming(e.target.checked)} />
+                  Enable Two-Step Timing
+                </label>
+              </div>
+            </div>
+
+            <div className="card">
+              <button className="btn btn-danger" onClick={() => setShowClearConfirm(true)}>Clear All Results</button>
+            </div>
+
+            {showClearConfirm && (
+              <div className="modal" onClick={() => setShowClearConfirm(false)}>
+                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                  <h2 style={{marginBottom: '15px'}}>Confirm Clear Results</h2>
+                  <p>Are you sure you want to clear all results? This cannot be undone.</p>
+                  <div className="modal-buttons">
+                    <button className="btn btn-secondary" onClick={() => setShowClearConfirm(false)}>Cancel</button>
+                    <button className="btn btn-danger" onClick={clearResults}>Clear Results</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      // TIMING STATION PAGE
+      if (page === 'timing') {
+        const stationRecords = records.filter(r => r.station === currentStation).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        return (
+          <div className="container">
+            <div className="header">
+              <h1 style={{cursor: 'pointer'}} onClick={() => setPage('main')}>{currentStation}</h1>
+              <div className="nav-buttons">
+                <button className="btn btn-icon btn-secondary" onClick={() => setPage('setup')}>⚙️</button>
+                <button className="btn btn-secondary" onClick={() => setPage('main')}>Back</button>
+              </div>
+            </div>
+
+            <div className="card timing-station">
+              <div className="time-display">{currentTime}</div>
+              
+              {currentStation === 'start' && (
+                <div className="sprint-head-selector">
+                  <button className={`btn mode-btn ${raceMode === 'sprint' ? 'active' : 'btn-secondary'}`} onClick={() => setRaceMode('sprint')}>Sprint</button>
+                  <button className={`btn mode-btn ${raceMode === 'head' ? 'active' : 'btn-secondary'}`} onClick={() => setRaceMode('head')}>Head</button>
+                </div>
+              )}
+
+              <div style={{marginBottom: '20px'}}>
+                <strong>Race: {currentRace}</strong>
+                {currentStation === 'start' && raceMode === 'sprint' && !twoStepTiming && (
+                  <button className="btn btn-secondary" style={{marginLeft: '10px'}} onClick={() => setCurrentRace(currentRace + 1)}>Next Race</button>
+                )}
+              </div>
+
+              {twoStepTiming ? (
+                <>
+                  <button className="btn btn-success record-btn" onClick={() => recordTime()}>Add Time</button>
+                  {pendingTimes.length > 0 && (
+                    <div>
+                      <h3 style={{margin: '20px 0'}}>Pending: {pendingTimes.length} time(s)</h3>
+                      <div className="lane-grid">
+                        {Array.from({length: numLanes}, (_, i) => i + 1).map(lane => (
+                          <button key={lane} className="btn btn-primary lane-btn" onClick={() => assignLane(lane)}>Lane {lane}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {currentStation === 'start' && raceMode === 'sprint' ? (
+                    <button className="btn btn-success record-btn" onClick={() => recordTime()}>Start Race {currentRace}</button>
+                  ) : (
+                    <div className="lane-grid">
+                      {Array.from({length: numLanes}, (_, i) => i + 1).map(lane => (
+                        <button key={lane} className="btn btn-primary lane-btn" onClick={() => recordTime(String(lane))}>Lane {lane}</button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="card">
+              <h2 style={{marginBottom: '15px'}}>Recent Records</h2>
+              <div className="records-list">
+                {stationRecords.map(record => (
+                  <div key={record.id} className={`record-item ${record.deleted ? 'deleted' : ''}`}>
+                    <input type="number" value={record.race} onChange={(e) => updateRecord(record.id, 'race', e.target.value)} disabled={record.deleted} />
+                    <input type="text" value={record.lane} onChange={(e) => updateRecord(record.id, 'lane', e.target.value)} disabled={record.deleted} />
+                    <input type="text" value={formatTime(new Date(record.timestamp))} onChange={(e) => {
+                      const parts = e.target.value.split(/[:.]/).map(p => parseInt(p));
+                      const now = new Date();
+                      now.setHours(parts[0] || 0, parts[1] || 0, parts[2] || 0, (parts[3] || 0) * 10);
+                      updateRecord(record.id, 'timestamp', now.toISOString());
+                    }} disabled={record.deleted} />
+                    <div>
+                      {record.deleted ? (
+                        <button className="btn btn-success btn-icon" onClick={() => undoDelete(record.id)}>↶</button>
+                      ) : (
+                        <button className="btn btn-danger btn-icon" onClick={() => deleteRecord(record.id)}>🗑️</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // RESULTS PAGE
+      if (page === 'results') {
+        const results = calculateResults();
+        const races = [...new Set(results.map(r => r.race))].sort((a, b) => a - b);
+
+        return (
+          <div className="container">
+            <div className="header">
+              <h1>Results Review</h1>
+              <button className="btn btn-secondary" onClick={() => setPage('main')}>Back</button>
+            </div>
+
+            {races.map(race => {
+              const raceResults = results.filter(r => r.race === race);
+              const isOfficial = officialRaces.has(race);
+              
+              return (
+                <div key={race} className="card">
+                  <div className="race-header">
+                    <h2>Race {race}</h2>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                        <span>Official</span>
+                        <label className="toggle">
+                          <input type="checkbox" checked={isOfficial} onChange={() => toggleOfficial(race)} />
+                          <span className="slider"></span>
+                        </label>
+                      </label>
+                      {isOfficial && (
+                        <button className="btn btn-primary" onClick={() => exportRace(race)}>Export</button>
+                      )}
+                    </div>
+                  </div>
+
+                  <table className="results-table">
+                    <thead>
+                      <tr>
+                        <th>Place</th>
+                        <th>Lane</th>
+                        {stations.map(s => <th key={s}>{s}</th>)}
+                        <th>Margin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {raceResults.sort((a, b) => (a.place || 999) - (b.place || 999)).map(r => (
+                        <tr key={`${r.race}-${r.lane}`}>
+                          <td>{r.place || '-'}</td>
+                          <td>{r.lane}</td>
+                          {stations.map(s => (
+                            <td key={s} onContextMenu={(e) => handleContextMenu(e, r.race, r.lane, s)}>
+                              {r.raceTimes[s] ? r.raceTimes[s].toFixed(2) : '-'}
+                            </td>
+                          ))}
+                          <td>{r.margin || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
+
+            {contextMenu && (
+              <div className="context-menu" style={{left: contextMenu.x, top: contextMenu.y}} onClick={(e) => e.stopPropagation()}>
+                <div className="context-menu-item" onClick={copyTime}>
+                  <span>📋</span> Copy {formatTime(new Date(contextMenu.timestamp))}
+                </div>
+                {copiedTime && (
+                  <div className="context-menu-item" onClick={pasteTime}>
+                    <span>📄</span> Paste {formatTime(new Date(copiedTime))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      // MAIN PAGE
+      return (
+        <div className="container">
+          <div className="header">
+            <h1>Rowing Regatta Timing System</h1>
+            <div className="nav-buttons">
+              <button className="btn btn-primary" onClick={() => setPage('results')}>Results</button>
+              <button className="btn btn-secondary" onClick={() => setPage('setup')}>Setup</button>
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 style={{marginBottom: '15px'}}>Select Timing Station</h2>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px'}}>
+              {stations.map(station => (
+                <button 
+                  key={station} 
+                  className="btn btn-primary" 
+                  style={{padding: '30px', fontSize: '18px'}}
+                  onClick={() => {
+                    setCurrentStation(station);
+                    setPage('timing');
+                  }}
+                >
+                  {station}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 style={{marginBottom: '15px'}}>Quick Stats</h2>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px'}}>
+              <div style={{textAlign: 'center'}}>
+                <div style={{fontSize: '32px', fontWeight: 'bold', color: '#2563eb'}}>{records.filter(r => !r.deleted).length}</div>
+                <div style={{color: '#64748b'}}>Total Records</div>
+              </div>
+              <div style={{textAlign: 'center'}}>
+                <div style={{fontSize: '32px', fontWeight: 'bold', color: '#2563eb'}}>{currentRace}</div>
+                <div style={{color: '#64748b'}}>Current Race</div>
+              </div>
+              <div style={{textAlign: 'center'}}>
+                <div style={{fontSize: '32px', fontWeight: 'bold', color: '#2563eb'}}>{numLanes}</div>
+                <div style={{color: '#64748b'}}>Lanes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<RegattaTimingSystem />, document.getElementById('root'));
+  </script>
+</body>
+</html>
