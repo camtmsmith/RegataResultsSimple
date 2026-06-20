@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Brisbane River Series 2026 — Points Table</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0d1f35;--navy-mid:#1a3352;--navy-light:#254a6e;--gold:#e8a020;--gold-lt:#f5c060;--blue:#2e7eb8;--white:#fff;--off:#f7f8fa;--border:#dde3ea;--text:#1a2a3a;--muted:#8a9aaa;--pts:#1a6fa0;--pts-bg:#e8f4fd}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Barlow',sans-serif;background:var(--off);color:var(--text);min-height:100vh}
+header{background:var(--navy);padding:24px 32px 20px;border-bottom:3px solid var(--gold)}
+header h1{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:#fff;letter-spacing:.04em;text-transform:uppercase}
+header p{font-size:12px;color:var(--gold-lt);margin-top:4px}
+.container{max-width:1060px;margin:0 auto;padding:24px 20px 48px}
+.controls{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px}
+.fg label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+select{font-family:'Barlow',sans-serif;font-size:13px;color:var(--text);background:#fff;border:1.5px solid var(--border);border-radius:6px;padding:7px 28px 7px 10px;appearance:none;-webkit-appearance:none;width:100%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer}
+select:hover{border-color:var(--blue)} select:focus{outline:none;border-color:var(--navy)}
+.summary{font-size:12px;color:var(--muted);margin-bottom:10px}
+.summary strong{color:var(--text)}
+.wrap{background:#fff;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;overflow-x:auto}
+.cat-hdr{background:var(--navy);color:var(--gold-lt);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;border-bottom:1px solid var(--navy-mid)}
+table{width:100%;border-collapse:collapse}
+thead th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:9px 12px;background:var(--off);border-bottom:1px solid var(--border);white-space:nowrap}
+thead th.c{text-align:center} thead th.r{text-align:right}
+thead tr.sub th{font-size:10px;padding:3px 12px 5px;background:var(--off);border-bottom:1px solid var(--border);color:var(--muted)}
+tbody tr{border-bottom:1px solid var(--border)} tbody tr:last-child{border-bottom:none} tbody tr:hover{background:#f4f8fc}
+tbody td{padding:9px 12px;font-size:13px;vertical-align:middle}
+td.c{text-align:center} td.r{text-align:right}
+.pb{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700}
+.p1{background:var(--gold);color:var(--navy)} .p2{background:#c8d0d8;color:#2a3540} .p3{background:#d4a87a;color:#3a2010} .pn{background:none;color:var(--muted)}
+.bow{display:inline-flex;align-items:center;justify-content:center;background:var(--navy);color:#fff;font-weight:700;font-size:11px;min-width:24px;height:20px;border-radius:3px;padding:0 5px;font-family:monospace}
+.gr{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--navy-light);color:var(--gold-lt);margin-left:5px;vertical-align:middle}
+.bow-rnd{font-family:'Barlow Condensed',sans-serif;font-size:10px;padding:1px 5px;border-radius:3px;background:var(--off);border:1px solid var(--border);color:var(--muted);display:inline-flex;align-items:center;gap:3px;margin-top:2px}
+.bow-rnd .bn{background:var(--navy);color:#fff;font-weight:700;border-radius:2px;padding:0 4px;font-size:10px;font-family:monospace}
+.pts-val{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--pts)}
+.rnd-time{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--muted)}
+.rnd-pct{font-size:10px;color:var(--muted)}
+.total-pill{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;padding:2px 12px;border-radius:20px;background:var(--pts-bg);color:var(--pts);min-width:40px;text-align:center}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+.chdr{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Brisbane River Series 2026</h1>
+  <p>Points Table &mdash; 5/4/3/2/1 for top 5 finishers</p>
+</header>
+<div class="container">
+  <div class="controls">
+    <div class="fg">
+      <label for="sel-round">Rounds</label>
+      <select id="sel-round" onchange="render()">
+        <option value="R1" selected>Rnd 1</option>
+        <option value="R2">Rnd 2</option>
+        <option value="all">All rounds</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label for="sel-view">View</label>
+      <select id="sel-view" onchange="toggleViewFilters();render()">
+        <option value="points">Points Table</option>
+        <option value="fastest">Fastest Boats</option>
+      </select>
+    </div>
+    <div class="fg" id="fg-gender">
+      <label for="sel-gender">Gender</label>
+      <select id="sel-gender" onchange="render()">
+        <option value="all">All genders</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="mixed">Mixed</option>
+      </select>
+    </div>
+    <div class="fg" id="fg-boat">
+      <label for="sel-boat">Boat</label>
+      <select id="sel-boat" onchange="render()">
+        <option value="all">All boats</option>
+        <option value="8+">8+</option>
+        <option value="4+">4+ / 4−</option>
+        <option value="4x">4x</option>
+        <option value="1x/2x">1x / 2x</option>
+      </select>
+    </div>
+  </div>
+  <div class="summary" id="summary"></div>
+  <div class="wrap" id="wrap"></div>
+</div>
+<script>
+const ROUND_LABELS={"R1":"Rnd 1","R2":"Rnd 2"};
+const SCALE=[5,4,3,2,1];
+const CAT_META={"MM8+":{label:"Men's Masters 8+",boat:"8+",gender:"male"},
+  "WM8+":{label:"Women's Masters 8+",boat:"8+",gender:"female"},
+  "MM4x":{label:"Men's Masters 4x",boat:"4x",gender:"male"},
+  "MixM4x":{label:"Mixed Masters 4x",boat:"4x",gender:"mixed"},
+  "WM4x":{label:"Women's Masters 4x",boat:"4x",gender:"female"},
+  "MM4+/-":{label:"Men's Masters 4+/4−",boat:"4+",gender:"male"},
+  "WM4+/-":{label:"Women's Masters 4+/4−",boat:"4+",gender:"female"},
+  "WM1x":{label:"Women's Masters 1x",boat:"1x/2x",gender:"female"},
+  "M4x":{label:"Men's Quad",boat:"4x",gender:"male"}};
+const CAT_ORDER=["MM8+","WM8+","MM4x","WM4x","MixM4x","M4x","MM4+/-","WM4+/-","WM1x"];
+const RAW=[
+  ["3","TOOWONG","C","MM8+","R1",5,"14:29.14","88.13"],
+  ["3","TOOWONG","C","MM8+","R2",4,"12:17.60","103.85"],
+  ["9","BRISBANE & GPS COMPOSITE","E","MM8+","R1",4,"15:39.78","84.77"],
+  ["9","BRISBANE & GPS COMPOSITE","E","MM8+","R2",3,"12:51.93","103.21"],
+  ["10","UNI OF QLD/TOOWONG","E","MM8+","R1",3,"15:46.60","84.16"],
+  ["10","UNI OF QLD/TOOWONG","E","MM8+","R2",0,"13:14.73","100.24"],
+  ["14","TOOWONG","H","MM8+","R1",2,"17:36.14","83.56"],
+  ["14","TOOWONG","H","MM8+","R2",5,"13:50.83","106.22"],
+  ["1","BRISBANE & GPS COMPOSITE","H","MM8+","R1",1,"18:02.53","81.53"],
+  ["1","BRISBANE & GPS COMPOSITE","H","MM8+","R2",2,"14:19.29","102.71"],
+  ["7","COMMERCIAL","D","MM8+","R1",0,"16:03.08","81.00"],
+  ["7","COMMERCIAL","D","MM8+","R2",1,"12:42.61","102.30"],
+  ["15","VIKINGS/OUTBACK ROWING","F","MM8+","R1",0,"17:15.15","78.98"],
+  ["4","UNI OF QLD","D","MM8+","R1",0,"16:34.41","78.46"],
+  ["4","UNI OF QLD","D","MM8+","R2",0,"13:34.49","95.79"],
+  ["13","VIKINGS 1","G","MM8+","R1",0,"18:06.30","77.81"],
+  ["13","VIKINGS 1","G","MM8+","R2",0,"14:32.40","96.87"],
+  ["12","BRISBANE GRAMMARIANS","F","MM8+","R1",0,"17:35.55","77.46"],
+  ["12","BRISBANE GRAMMARIANS","F","MM8+","R2",0,"13:36.51","100.15"],
+  ["8","COMMERCIAL","E","MM8+","R1",0,"17:42.38","74.99"],
+  ["11","BRISBANE","F","MM8+","R1",0,"18:17.06","74.53"],
+  ["11","BRISBANE","F","MM8+","R2",0,"14:21.85","94.88"],
+  ["2","COMMERCIAL","C","MM8+","R1",0,"17:27.76","73.10"],
+  ["2","COMMERCIAL","C","MM8+","R2",0,"15:07.62","84.39"],
+  ["6","VIKINGS 2","E","MM8+","R1",0,"19:11.64","69.17"],
+  ["28","TOOWONG","H","WM8+","R1",5,"19:04.42","87.49"],
+  ["28","TOOWONG","H","WM8+","R2",5,"15:35.78","107.01"],
+  ["27","COMMERCIAL","F","WM8+","R1",4,"18:48.21","81.61"],
+  ["20","TOOWONG/STORM KING","C","WM8+","R1",3,"17:48.47","80.79"],
+  ["25","BRISBANE","E","WM8+","R1",2,"18:45.95","79.62"],
+  ["25","BRISBANE","E","WM8+","R2",3,"14:38.49","102.06"],
+  ["23","DRAGONS","D","WM8+","R1",1,"19:15.74","76.01"],
+  ["24","TOOWONG","E","WM8+","R1",0,"19:41.46","75.89"],
+  ["24","TOOWONG","E","WM8+","R2",0,"15:22.82","97.16"],
+  ["22","TOOWONG","D","WM8+","R1",0,"20:54.08","70.04"],
+  ["21","BRISBANE & GPS/RIVER CITY WOM..","D","WM8+","R1",0,"21:21.95","68.53"],
+  ["26","OUTBACK ROWING","E","WM8+","R1",0,"25:07.08","59.50"],
+  ["32","TOOWONG/NOOSA","F","MM4x","R1",5,"17:12.33","81.67"],
+  ["31","BRISBANE & GPS","E","MM4x","R1",4,"17:46.49","77.00"],
+  ["31","BRISBANE & GPS","E","MM4x","R2",4,"13:47.93","99.20"],
+  ["30","TOOWONG/ADF ROWING","C","MM4x","R1",3,"18:15.11","72.10"],
+  ["36","DRAGONS","F","MixM4x","R1",5,"18:56.87","78.55"],
+  ["36","DRAGONS","F","MixM4x","R2",5,"14:52.73","100.02"],
+  ["35","DRAGONS","C","MixM4x","R1",4,"20:48.29","67.03"],
+  ["40","UNI OF QLD/TOOWONG","D","WM4x","R1",5,"17:14.23","87.55"],
+  ["45","COMMERCIAL","C","MM4+/-","R1",5,"16:25.44","82.68"],
+  ["46","TOOWONG","E","MM4+/-","R1",4,"17:26.58","80.98"],
+  ["46","TOOWONG","E","MM4+/-","R2",5,"14:19.17","98.64"],
+  ["48","RIVER CITY WOMENS","E","WM4+/-","R1",5,"19:37.73","80.99"],
+  ["48","RIVER CITY WOMENS","E","WM4+/-","R2",5,"15:46.17","100.80"],
+  ["49","TOOWONG","E","WM4+/-","R1",4,"20:53.02","76.11"],
+  ["49","TOOWONG","E","WM4+/-","R2",4,"16:35.74","95.79"],
+  ["51","TOOWONG","C","WM1x","R1",5,"26:48.19","63.89"],
+  ["33","TOOWONG","","M4x","R1",5,"19:22.42",""],
+  ["33","TOOWONG","","M4x","R2",5,"14:18.18",""],
+  ["8","COMMERCIAL/LOWER CLARENCE","E","MM8+","R2",0,"13:57.99","95.07"],
+  ["6","VIKINGS 2","D","MM8+","R2",0,"14:05.19","92.31"],
+  ["27","COMMERCIAL","G","WM8+","R2",4,"15:06.39","105.24"],
+  ["20","TOOWONG/NOOSA","C","WM8+","R2",2,"14:17.06","100.72"],
+  ["19","COMMERCIAL/MURWILLUMBAH","D","WM8+","R2",1,"14:51.08","98.59"],
+  ["32","TOOWONG COMPOSITE","F","MM4x","R2",5,"14:06.14","99.63"],
+  ["30","TOOWONG","C","MM4x","R2",3,"14:19.05","91.92"],
+  ["52","VIKINGS","F","MM4x","R2",2,"15:25.99","91.04"],
+  ["23","DRAGONS","D","WM4x","R2",5,"15:25.89","97.81"],
+  ["37","RED LEGS/RIVER CITY WOMENS","D","MixM4x","R2",4,"14:37.72","97.07"],
+  ["35","DRAGONS","A","MixM4x","R2",3,"15:03.60","90.42"],
+];
+function toggleViewFilters(){
+  const isFastest=document.getElementById('sel-view').value==='fastest';
+  document.getElementById('fg-gender').style.display=isFastest?'none':'flex';
+  document.getElementById('fg-boat').style.display=isFastest?'none':'flex';
+}
+function buildCrews(visRounds){
+  const m={};
+  RAW.forEach(([bow,crew,grade,cat,rnd,pts,time,pct])=>{
+    if(!time)return;
+    const key=crew+'||'+grade+'||'+cat;
+    if(!m[key])m[key]={crew,grade,cat,bow,bows:{},rounds:{}};
+    m[key].bows[rnd]=bow;
+    m[key].rounds[rnd]={pts,time,pct};
+  });
+  return Object.values(m);
+}
+function pctCol(p){if(!p)return'var(--muted)';const n=parseFloat(p);return n>=85?'#15803d':n>=75?'#b45309':'#dc2626';}
+function pb(r){const cls=r===1?'p1':r===2?'p2':r===3?'p3':'pn';return'<span class="pb '+cls+'">'+r+'</span>';}
+function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct){
+  const BOAT_CATS={
+    '8+':['MM8+','WM8+','MixM8+','Mix8+','M8+','W8+','G8+','B8+'],
+    '4x':['MM4x','WM4x','MixM4x','M4x','W4x'],
+    '4+':['MM4+/-','WM4+/-','MM2-','WM2-']
+  };
+  const cats=BOAT_CATS[boatKey]||[];
+  const pool=allCrews.filter(c=>cats.includes(c.cat)&&visR.some(r=>c.rounds[r]?.pct));
+  if(!pool.length)return'';
+  const sorted=pool.slice().sort((a,b)=>{
+    const ba=Math.max(...visR.map(r=>parseFloat(a.rounds[r]?.pct||0)));
+    const bb=Math.max(...visR.map(r=>parseFloat(b.rounds[r]?.pct||0)));
+    return bb-ba;
+  });
+  // Re-assign points by % rank per round
+  const reranked=sorted.map(crew=>{
+    const nr={};
+    visR.forEach(r=>{
+      if(!crew.rounds[r])return;
+      const ranked=pool.filter(e=>e.rounds[r]?.pct).sort((a,b)=>parseFloat(b.rounds[r].pct)-parseFloat(a.rounds[r].pct));
+      const pos=ranked.findIndex(e=>e===crew);
+      nr[r]={...crew.rounds[r],pts:pos>=0&&pos<scale.length?scale[pos]:0};
+    });
+    return{...crew,rounds:nr};
+  }).filter(c=>visR.some(r=>(c.rounds[r]?.pts||0)>0));
+  if(!reranked.length)return'';
+  // Best pct within this fastest group per round
+  const bp={};
+  visR.forEach(r=>{let b=-1;reranked.forEach(c=>{const p=parseFloat(c.rounds[r]?.pct||0);if(p>b)b=p;});bp[r]=b>0?b:null;});
+  // Same single-table approach for consistent columns
+  const ncols2=2+visR.length*2+(showT?1:0);
+  let h='';
+  h+='<table style="width:100%;table-layout:fixed;border-collapse:collapse;margin-top:4px"><colgroup><col style="width:56px"><col style="width:60px"><col>';
+  visR.forEach(()=>h+='<col style="width:48px"><col style="width:192px">');
+  if(showT)h+='<col style="width:80px">';
+  h+='</colgroup><tbody>';
+  h+='<tr><td colspan="'+ncols2+'" style="padding:0"><div class="cat-hdr">'+boatLabel+'</div></td></tr>';
+  h+='<tr style="background:var(--off);border-bottom:1px solid var(--border)">';
+  h+='<td class="c chdr">Pos</td>';
+  h+='<td colspan="2" class="chdr">Crew</td>';
+  visR.forEach(r=>h+='<td colspan="2" class="c chdr" style="border-left:1px solid var(--border)">'+(ROUND_LABELS[r]||r)+'</td>');
+  if(showT)h+='<td class="r chdr">Total</td>';
+  h+='</tr>';
+  reranked.forEach((crew,i)=>{
+    const total=visR.reduce((s,r)=>s+(crew.rounds[r]?.pts||0),0);
+    const gr=crew.grade?'<span class="gr">'+crew.grade+'</span>':'';
+    const ct='<span style="font-size:10px;color:var(--muted);margin-left:5px;font-family:monospace">'+crew.cat+'</span>';
+    const bg=i%2===0?'var(--white)':'var(--off)';
+    h+='<tr style="background:'+bg+';border-bottom:1px solid var(--border)">';
+    h+='<td class="c" style="padding:10px 12px">'+pb(i+1)+'</td>';
+    h+='<td style="padding:10px 4px 10px 12px"><span class="bow">'+crew.bow+'</span></td>';
+    h+='<td style="padding:10px 12px 10px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-weight:500;font-size:14px">'+crew.crew+gr+ct+'</span></td>';
+    visR.forEach(r=>{
+      const rd=crew.rounds[r];
+      const isBest=rd?.pct&&bp[r]&&parseFloat(rd.pct)===bp[r];
+      if(!rd){h+='<td colspan="2" class="c" style="color:#d1d5db;border-left:1px solid var(--border);padding:10px 12px">—</td>';return;}
+      if(!rd.pts){
+        h+='<td class="c" style="color:#9ca3af;border-left:1px solid var(--border);padding:10px 8px 10px 12px">–</td>';
+        h+='<td style="padding:10px 12px 10px 4px"><span class="rnd-pct">'+(rd.pct?rd.pct+'%':'—')+'</span><br><span class="rnd-time">'+(rd.time?'('+rd.time+')':'')+'</span></td>';
+      }else{
+        const bg2=isBest?'rgba(234,179,8,.10)':'transparent';
+        h+='<td class="c" style="background:'+bg2+';border-left:1px solid var(--border);padding:10px 8px 10px 12px'+(isBest?';border-left:3px solid #e8a020':'')+'"><span class="pts-val" style="'+(isBest?'color:#b45309':'')+'">'+rd.pts+'</span></td>';
+        h+='<td style="background:'+bg2+';padding:10px 12px 10px 4px"><span class="rnd-pct" style="color:'+pctCol(rd.pct)+'">'+(rd.pct?rd.pct+'%':'—')+'</span><br><span class="rnd-time">'+(rd.time?'('+rd.time+')':'')+'</span></td>';
+      }
+    });
+    if(showT)h+='<td class="r" style="padding:10px 12px"><span class="total-pill">'+total+'</span></td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  return h;
+}
+function render(){
+  const fr=document.getElementById('sel-round').value;
+  const fg=document.getElementById('sel-gender').value;
+  const fb=document.getElementById('sel-boat').value;
+  const fv=document.getElementById('sel-view').value;
+  const allR=Object.keys(ROUND_LABELS);
+  const visR=fr==='all'?allR:[fr];
+  const crews=buildCrews(visR);
+  const scoring=crews.filter(c=>visR.some(r=>(c.rounds[r]?.pts||0)>0));
+  const showT=visR.length>1;
+  const bestPct={};
+  visR.forEach(r=>{let best=-1;crews.forEach(c=>{const p=parseFloat(c.rounds[r]?.pct||0);if(p>best)best=p;});bestPct[r]=best>0?best:null;});
+  let html='',cnt=0;
+  if(fv==='fastest'){
+    html+=buildFastestSection(crews,'8+','Fastest 8+ — All Classes',visR,showT,SCALE,bestPct);
+    html+=buildFastestSection(crews,'4x','Fastest 4x — All Classes',visR,showT,SCALE,bestPct);
+    html+=buildFastestSection(crews,'4+','Fastest 4+/4− — All Classes',visR,showT,SCALE,bestPct);
+    if(!html)html='<div class="empty">No fastest data available</div>';
+    document.getElementById('summary').innerHTML='Fastest crews by prognostic %';
+    document.getElementById('wrap').innerHTML=html;
+    return;
+  }
+  const cats=CAT_ORDER.filter(cat=>{
+    const m=CAT_META[cat];if(!m)return false;
+    if(fg!=='all'&&m.gender!==fg)return false;
+    if(fb!=='all'&&m.boat!==fb)return false;
+    return scoring.some(c=>c.cat===cat);
+  });
+  if(!cats.length){document.getElementById('wrap').innerHTML='<div class="empty">No results match filters</div>';return;}
+  // One shared table for ALL categories so columns are consistent
+  const ncols=2+visR.length*2+(showT?1:0);
+  // colgroup: pos=56, bow=60, crew=auto, per-round pair=240px each, total=80
+  let cg='<colgroup><col style="width:56px"><col style="width:60px"><col>';
+  visR.forEach(()=>cg+='<col style="width:48px"><col style="width:192px">');
+  if(showT)cg+='<col style="width:80px">';
+  cg+='</colgroup>';
+  html='<table style="width:100%;table-layout:fixed;border-collapse:collapse">'+cg+'<tbody>';
+  cats.forEach(cat=>{
+    const cc=scoring.filter(c=>c.cat===cat).sort((a,b)=>{
+      const ta=visR.reduce((s,r)=>s+(a.rounds[r]?.pts||0),0);
+      const tb=visR.reduce((s,r)=>s+(b.rounds[r]?.pts||0),0);
+      return tb-ta;
+    });
+    if(!cc.length)return;cnt+=cc.length;
+    const m=CAT_META[cat];
+    // Category header row
+    html+='<tr><td colspan="'+ncols+'" style="padding:0"><div class="cat-hdr">'+(m?m.label:cat)+'</div></td></tr>';
+    // Column sub-header
+    html+='<tr style="background:var(--off);border-bottom:1px solid var(--border)">';
+    html+='<td class="c chdr">Pos</td>';
+    html+='<td colspan="2" class="chdr">Crew</td>';
+    visR.forEach(r=>html+='<td colspan="2" class="c chdr" style="border-left:1px solid var(--border)">'+(ROUND_LABELS[r]||r)+'</td>');
+    if(showT)html+='<td class="r chdr">Total</td>';
+    html+='</tr>';
+    cc.forEach((crew,i)=>{
+      const total=visR.reduce((s,r)=>s+(crew.rounds[r]?.pts||0),0);
+      const gr=crew.grade?'<span class="gr">'+crew.grade+'</span>':'';
+      const bg=i%2===0?'var(--white)':'var(--off)';
+      html+='<tr style="background:'+bg+';border-bottom:1px solid var(--border)">';
+      html+='<td class="c" style="padding:10px 12px">'+pb(i+1)+'</td>';
+      html+='<td style="padding:10px 4px 10px 12px"><span class="bow">'+crew.bow+'</span></td>';
+      html+='<td style="padding:10px 12px 10px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-weight:500;font-size:14px">'+crew.crew+gr+'</span></td>';
+      visR.forEach(r=>{
+        const rd=crew.rounds[r];
+        const isBest=rd?.pct&&bestPct[r]&&parseFloat(rd.pct)===bestPct[r];
+        if(!rd){html+='<td colspan="2" class="c" style="color:#d1d5db;border-left:1px solid var(--border);padding:10px 12px">—</td>';return;}
+        if(!rd.pts){
+          html+='<td class="c" style="color:#9ca3af;border-left:1px solid var(--border);padding:10px 8px 10px 12px">–</td>';
+          html+='<td style="padding:10px 12px 10px 4px"><span class="rnd-pct">'+(rd.pct?rd.pct+'%':'—')+'</span><br><span class="rnd-time">'+(rd.time?'('+rd.time+')':'')+'</span></td>';
+        }else{
+          const bg2=isBest?'rgba(234,179,8,.10)':'transparent';
+          html+='<td class="c" style="background:'+bg2+';border-left:1px solid var(--border);padding:10px 8px 10px 12px'+(isBest?';border-left:3px solid var(--gold)':'')+'"><span class="pts-val" style="'+(isBest?'color:#b45309':'')+'">'+rd.pts+'</span></td>';
+          html+='<td style="background:'+bg2+';padding:10px 12px 10px 4px"><span class="rnd-pct" style="color:'+pctCol(rd.pct)+'">'+(rd.pct?rd.pct+'%':'—')+'</span><br><span class="rnd-time">'+(rd.time?'('+rd.time+')':'')+'</span></td>';
+        }
+      });
+      if(showT)html+='<td class="r" style="padding:10px 12px"><span class="total-pill">'+total+'</span></td>';
+      html+='</tr>';
+    });
+  });
+  html+='</tbody></table>';
+  const rs=visR.map(r=>ROUND_LABELS[r]||r).join(', ');
+  document.getElementById('summary').innerHTML='Showing <strong>'+cnt+' crew'+(cnt!==1?'s':'')+'</strong> with points — '+rs;
+  document.getElementById('wrap').innerHTML=html;
+}
+render();
+</script>
+</body>
+</html>
