@@ -20,7 +20,7 @@ select{font-family:'Barlow',sans-serif;font-size:13px;color:var(--text);backgrou
 select:hover{border-color:var(--blue)} select:focus{outline:none;border-color:var(--navy)}
 .summary{font-size:12px;color:var(--muted);margin-bottom:10px}
 .summary strong{color:var(--text)}
-.wrap{background:#fff;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;overflow-x:auto}
+.wrap{background:#fff;border:1.5px solid var(--border);border-radius:10px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
 .cat-hdr{background:var(--navy);color:var(--gold-lt);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;border-bottom:1px solid var(--navy-mid)}
 table{width:100%;border-collapse:collapse}
 thead th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:9px 12px;background:var(--off);border-bottom:1px solid var(--border);white-space:nowrap}
@@ -53,9 +53,9 @@ td.c{text-align:center} td.r{text-align:right}
     <div class="fg">
       <label for="sel-round">Rounds</label>
       <select id="sel-round" onchange="render()">
-        <option value="R1" selected>Rnd 1</option>
+        <option value="R1">Rnd 1</option>
         <option value="R2">Rnd 2</option>
-        <option value="all">All rounds</option>
+        <option value="all" selected>All rounds</option>
       </select>
     </div>
     <div class="fg">
@@ -217,9 +217,12 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
   const bp={};
   visR.forEach(r=>{let b=-1;reranked.forEach(c=>{const p=parseFloat(c.rounds[r]?.pct||0);if(p>b)b=p;});bp[r]=b>0?b:null;});
   // Same single-table approach for consistent columns
+  // CREW_W gives the crew name enough room on mobile; table can exceed container width and scroll horizontally
   const ncols2=2+visR.length*2+(showT?1:0);
+  const CREW_W=200;
+  const fixedW2=56+60+(visR.length*240)+(showT?80:0);
   let h='';
-  h+='<table style="width:100%;table-layout:fixed;border-collapse:collapse;margin-top:4px"><colgroup><col style="width:56px"><col style="width:60px"><col>';
+  h+='<table style="width:100%;min-width:'+(fixedW2+CREW_W)+'px;table-layout:fixed;border-collapse:collapse;margin-top:4px"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
   visR.forEach(()=>h+='<col style="width:48px"><col style="width:192px">');
   if(showT)h+='<col style="width:80px">';
   h+='</colgroup><tbody>';
@@ -288,13 +291,16 @@ function render(){
   });
   if(!cats.length){document.getElementById('wrap').innerHTML='<div class="empty">No results match filters</div>';return;}
   // One shared table for ALL categories so columns are consistent
+  // CREW_W gives the crew name enough room on mobile; table can exceed container width and scroll horizontally
   const ncols=2+visR.length*2+(showT?1:0);
-  // colgroup: pos=56, bow=60, crew=auto, per-round pair=240px each, total=80
-  let cg='<colgroup><col style="width:56px"><col style="width:60px"><col>';
+  const CREW_W=200;
+  const fixedW=56+60+(visR.length*240)+(showT?80:0);
+  // colgroup: pos=56, bow=60, crew=200, per-round pair=240px each, total=80
+  let cg='<colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
   visR.forEach(()=>cg+='<col style="width:48px"><col style="width:192px">');
   if(showT)cg+='<col style="width:80px">';
   cg+='</colgroup>';
-  html='<table style="width:100%;table-layout:fixed;border-collapse:collapse">'+cg+'<tbody>';
+  html='<table style="width:100%;min-width:'+(fixedW+CREW_W)+'px;table-layout:fixed;border-collapse:collapse">'+cg+'<tbody>';
   cats.forEach(cat=>{
     const cc=scoring.filter(c=>c.cat===cat).sort((a,b)=>{
       const ta=visR.reduce((s,r)=>s+(a.rounds[r]?.pts||0),0);
