@@ -20,8 +20,12 @@ select{font-family:'Barlow',sans-serif;font-size:13px;color:var(--text);backgrou
 select:hover{border-color:var(--blue)} select:focus{outline:none;border-color:var(--navy)}
 .summary{font-size:12px;color:var(--muted);margin-bottom:10px}
 .summary strong{color:var(--text)}
-.wrap{width:100%;max-width:100%;background:#fff;border:1.5px solid var(--border);border-radius:10px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;display:block}
-.cat-hdr{background:var(--navy);color:var(--gold-lt);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;border-bottom:1px solid var(--navy-mid)}
+.wrap{width:100%;max-width:100%;display:block}
+.cat-hdr{background:var(--navy);color:var(--gold-lt);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;border-bottom:1px solid var(--navy-mid);width:100%;box-sizing:border-box}
+.cat-blocks{background:#fff;border:1.5px solid var(--border);border-radius:10px;overflow:hidden}
+.cat-blocks>.cat-hdr:first-child{border-radius:8px 8px 0 0}
+.cat-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--border)}
+.cat-scroll:last-child{border-bottom:none}
 table{width:100%;border-collapse:separate;border-spacing:0}
 thead th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:9px 12px;background:var(--off);border-bottom:1px solid var(--border);white-space:nowrap}
 thead th.c{text-align:center} thead th.r{text-align:right}
@@ -229,11 +233,12 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
   const TOTAL_W=70;
   const fixedW2=56+60+CREW_W+(showT?TOTAL_W:0)+(visR.length*176);
   let h='';
-  h+='<table id="ft-table-'+boatKey+'" class="pts-table" style="table-layout:fixed;border-collapse:separate;border-spacing:0;margin-top:4px" data-minw="'+fixedW2+'"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
+  // Category header spans the FULL wrap width (outside the scrollable table)
+  h+='<div class="cat-hdr">'+boatLabel+'</div>';
+  h+='<div class="cat-scroll"><table id="ft-table-'+boatKey+'" class="pts-table" style="table-layout:fixed;border-collapse:separate;border-spacing:0" data-minw="'+fixedW2+'"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
   if(showT)h+='<col style="width:'+TOTAL_W+'px">';
   visR.forEach(()=>h+='<col style="width:46px"><col style="width:130px">');
   h+='</colgroup><tbody>';
-  h+='<tr><td colspan="'+ncols2+'" style="padding:0"><div class="cat-hdr">'+boatLabel+'</div></td></tr>';
   h+='<tr style="background:var(--off);border-bottom:1px solid var(--border)">';
   h+='<td class="c chdr stick-pos" style="background:var(--off)">Pos</td>';
   h+='<td class="chdr stick-bow" style="background:var(--off)"></td>';
@@ -246,10 +251,11 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
     const gr=crew.grade?'<span class="gr">'+crew.grade+'</span>':'';
     const ct='<span style="font-size:10px;color:var(--muted);margin-left:5px;font-family:monospace">'+crew.cat+'</span>';
     const bg=i%2===0?'var(--white)':'var(--off)';
+    const titleAttr=' title="'+crew.crew.replace(/"/g,'&quot;')+'"';
     h+='<tr style="background:'+bg+';border-bottom:1px solid var(--border)">';
     h+='<td class="c stick-pos" style="padding:10px 12px;background:'+bg+'">'+pb(i+1)+'</td>';
     h+='<td class="stick-bow" style="padding:10px 4px 10px 12px;background:'+bg+'"><span class="bow">'+crew.bow+'</span></td>';
-    h+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-weight:500;font-size:14px">'+crew.crew+gr+ct+'</span></td>';
+    h+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"'+titleAttr+'><span style="font-weight:500;font-size:14px">'+gr+crew.crew+ct+'</span></td>';
     if(showT)h+='<td class="r stick-total" style="padding:10px 12px;background:'+bg+'"><span class="total-pill">'+total+'</span></td>';
     visR.forEach(r=>{
       const rd=crew.rounds[r];
@@ -264,10 +270,9 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
         h+='<td style="background:'+bg2+';padding:10px 12px 10px 4px"><span class="rnd-pct" style="color:'+pctCol(rd.pct)+'">'+(rd.pct?rd.pct+'%':'—')+'</span><br><span class="rnd-time">'+(rd.time?'('+rd.time+')':'')+'</span></td>';
       }
     });
-    if(showT)h+='<td class="r" style="padding:10px 12px"><span class="total-pill">'+total+'</span></td>';
     h+='</tr>';
   });
-  h+='</tbody></table>';
+  h+='</tbody></table></div>';
   return h;
 }
 function render(){
@@ -284,9 +289,12 @@ function render(){
   visR.forEach(r=>{let best=-1;crews.forEach(c=>{const p=parseFloat(c.rounds[r]?.pct||0);if(p>best)best=p;});bestPct[r]=best>0?best:null;});
   let html='',cnt=0;
   if(fv==='fastest'){
-    html+=buildFastestSection(crews,'8+','Fastest 8+ — All Classes',visR,showT,SCALE,bestPct);
-    html+=buildFastestSection(crews,'4x','Fastest 4x — All Classes',visR,showT,SCALE,bestPct);
-    html+=buildFastestSection(crews,'4+','Fastest 4+/4− — All Classes',visR,showT,SCALE,bestPct);
+    const sections=[
+      buildFastestSection(crews,'8+','Fastest 8+ — All Classes',visR,showT,SCALE,bestPct),
+      buildFastestSection(crews,'4x','Fastest 4x — All Classes',visR,showT,SCALE,bestPct),
+      buildFastestSection(crews,'4+','Fastest 4+/4− — All Classes',visR,showT,SCALE,bestPct)
+    ].filter(Boolean);
+    html=sections.map(s=>'<div class="cat-blocks" style="margin-bottom:16px">'+s+'</div>').join('');
     if(!html)html='<div class="empty">No fastest data available</div>';
     document.getElementById('summary').innerHTML='Fastest crews by prognostic %';
     document.getElementById('wrap').innerHTML=html;
@@ -313,7 +321,7 @@ function render(){
   if(showT)cg+='<col style="width:'+TOTAL_W+'px">';
   visR.forEach(()=>cg+='<col style="width:46px"><col style="width:130px">');
   cg+='</colgroup>';
-  html='<table class="pts-table" style="table-layout:fixed;border-collapse:separate;border-spacing:0" data-minw="'+fixedW+'">'+cg+'<tbody>';
+  html='';
   cats.forEach(cat=>{
     const cc=scoring.filter(c=>c.cat===cat).sort((a,b)=>{
       const ta=visR.reduce((s,r)=>s+(a.rounds[r]?.pts||0),0);
@@ -322,8 +330,11 @@ function render(){
     });
     if(!cc.length)return;cnt+=cc.length;
     const m=CAT_META[cat];
-    // Category header row
-    html+='<tr><td colspan="'+ncols+'" style="padding:0"><div class="cat-hdr">'+(m?m.label:cat)+'</div></td></tr>';
+    html+='<div class="cat-blocks" style="margin-bottom:16px">';
+    // Category header spans the FULL wrap width (outside the scrollable table)
+    html+='<div class="cat-hdr">'+(m?m.label:cat)+'</div>';
+    // Scrollable region for just this category's table
+    html+='<div class="cat-scroll"><table class="pts-table" style="table-layout:fixed;border-collapse:separate;border-spacing:0" data-minw="'+fixedW+'">'+cg+'<tbody>';
     // Column sub-header
     html+='<tr style="background:var(--off);border-bottom:1px solid var(--border)">';
     html+='<td class="c chdr stick-pos" style="background:var(--off)">Pos</td>';
@@ -336,10 +347,11 @@ function render(){
       const total=visR.reduce((s,r)=>s+(crew.rounds[r]?.pts||0),0);
       const gr=crew.grade?'<span class="gr">'+crew.grade+'</span>':'';
       const bg=i%2===0?'var(--white)':'var(--off)';
+      const titleAttr=' title="'+crew.crew.replace(/"/g,'&quot;')+'"';
       html+='<tr style="background:'+bg+';border-bottom:1px solid var(--border)">';
       html+='<td class="c stick-pos" style="padding:10px 12px;background:'+bg+'">'+pb(i+1)+'</td>';
       html+='<td class="stick-bow" style="padding:10px 4px 10px 12px;background:'+bg+'"><span class="bow">'+crew.bow+'</span></td>';
-      html+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-weight:500;font-size:14px">'+crew.crew+gr+'</span></td>';
+      html+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"'+titleAttr+'><span style="font-weight:500;font-size:14px">'+gr+crew.crew+'</span></td>';
       if(showT)html+='<td class="r stick-total" style="padding:10px 12px;background:'+bg+'"><span class="total-pill">'+total+'</span></td>';
       visR.forEach(r=>{
         const rd=crew.rounds[r];
@@ -356,23 +368,21 @@ function render(){
       });
       html+='</tr>';
     });
+    html+='</tbody></table></div></div>';
   });
-  html+='</tbody></table>';
   const rs=visR.map(r=>ROUND_LABELS[r]||r).join(', ');
   document.getElementById('summary').innerHTML='Showing <strong>'+cnt+' crew'+(cnt!==1?'s':'')+'</strong> with points — '+rs;
   document.getElementById('wrap').innerHTML=html;
   fixTableWidths();
 }
-// Sets each table to the wider of (its natural minimum content width) or (the wrap's
-// available width) — so on desktop it fills the full container, and on narrow mobile
-// screens it stays at its minimum width and the .wrap scrolls horizontally instead of
-// crushing columns.
+// Sets each category's table to its natural minimum content width. Each table lives
+// inside its own .cat-scroll div (not the full .wrap), so only that table's row data
+// scrolls horizontally on narrow screens — the navy category header above it is a
+// plain block-level div that always spans the full width of .wrap.
 function fixTableWidths(){
-  const wrap=document.getElementById('wrap');
-  const avail=wrap.clientWidth;
-  wrap.querySelectorAll('table[data-minw]').forEach(t=>{
+  document.querySelectorAll('table[data-minw]').forEach(t=>{
     const minw=parseInt(t.dataset.minw,10)||0;
-    t.style.width=Math.max(avail,minw)+'px';
+    t.style.width=minw+'px';
   });
 }
 window.addEventListener('resize',()=>{ if(document.getElementById('wrap')) fixTableWidths(); });
