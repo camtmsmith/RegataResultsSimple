@@ -22,7 +22,7 @@ select:hover{border-color:var(--blue)} select:focus{outline:none;border-color:va
 .summary strong{color:var(--text)}
 .wrap{background:#fff;border:1.5px solid var(--border);border-radius:10px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
 .cat-hdr{background:var(--navy);color:var(--gold-lt);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;border-bottom:1px solid var(--navy-mid)}
-table{width:100%;border-collapse:collapse}
+table{width:100%;border-collapse:separate;border-spacing:0}
 thead th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:9px 12px;background:var(--off);border-bottom:1px solid var(--border);white-space:nowrap}
 thead th.c{text-align:center} thead th.r{text-align:right}
 thead tr.sub th{font-size:10px;padding:3px 12px 5px;background:var(--off);border-bottom:1px solid var(--border);color:var(--muted)}
@@ -227,14 +227,15 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
   const CREW_W=200;
   const fixedW2=56+60+(visR.length*240)+(showT?80:0);
   let h='';
-  h+='<table style="width:100%;min-width:'+(fixedW2+CREW_W)+'px;table-layout:fixed;border-collapse:collapse;margin-top:4px"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
+  h+='<table style="width:100%;min-width:'+(fixedW2+CREW_W)+'px;table-layout:fixed;border-collapse:separate;border-spacing:0;margin-top:4px"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
   visR.forEach(()=>h+='<col style="width:48px"><col style="width:192px">');
   if(showT)h+='<col style="width:80px">';
   h+='</colgroup><tbody>';
   h+='<tr><td colspan="'+ncols2+'" style="padding:0"><div class="cat-hdr">'+boatLabel+'</div></td></tr>';
   h+='<tr style="background:var(--off);border-bottom:1px solid var(--border)">';
   h+='<td class="c chdr stick-pos" style="background:var(--off)">Pos</td>';
-  h+='<td colspan="2" class="chdr stick-crew" style="background:var(--off)">Crew</td>';
+  h+='<td class="chdr stick-bow" style="background:var(--off)"></td>';
+  h+='<td class="chdr stick-crew" style="background:var(--off)">Crew</td>';
   visR.forEach(r=>h+='<td colspan="2" class="c chdr" style="border-left:1px solid var(--border)">'+(ROUND_LABELS[r]||r)+'</td>');
   if(showT)h+='<td class="r chdr">Total</td>';
   h+='</tr>';
@@ -305,7 +306,7 @@ function render(){
   visR.forEach(()=>cg+='<col style="width:48px"><col style="width:192px">');
   if(showT)cg+='<col style="width:80px">';
   cg+='</colgroup>';
-  html='<table style="width:100%;min-width:'+(fixedW+CREW_W)+'px;table-layout:fixed;border-collapse:collapse">'+cg+'<tbody>';
+  html='<table style="width:100%;min-width:'+(fixedW+CREW_W)+'px;table-layout:fixed;border-collapse:separate;border-spacing:0">'+cg+'<tbody>';
   cats.forEach(cat=>{
     const cc=scoring.filter(c=>c.cat===cat).sort((a,b)=>{
       const ta=visR.reduce((s,r)=>s+(a.rounds[r]?.pts||0),0);
@@ -319,7 +320,8 @@ function render(){
     // Column sub-header
     html+='<tr style="background:var(--off);border-bottom:1px solid var(--border)">';
     html+='<td class="c chdr stick-pos" style="background:var(--off)">Pos</td>';
-    html+='<td colspan="2" class="chdr stick-crew" style="background:var(--off)">Crew</td>';
+    html+='<td class="chdr stick-bow" style="background:var(--off)"></td>';
+    html+='<td class="chdr stick-crew" style="background:var(--off)">Crew</td>';
     visR.forEach(r=>html+='<td colspan="2" class="c chdr" style="border-left:1px solid var(--border)">'+(ROUND_LABELS[r]||r)+'</td>');
     if(showT)html+='<td class="r chdr">Total</td>';
     html+='</tr>';
