@@ -43,7 +43,8 @@ td.c{text-align:center} td.r{text-align:right}
 /* Sticky first columns so Pos/Bow/Crew stay visible while round data scrolls horizontally */
 .stick-pos{position:sticky;left:0;z-index:2;background:inherit}
 .stick-bow{position:sticky;left:56px;z-index:2;background:inherit}
-.stick-crew{position:sticky;left:116px;z-index:2;background:inherit;box-shadow:2px 0 4px -2px rgba(0,0,0,.15)}
+.stick-crew{position:sticky;left:116px;z-index:2;background:inherit}
+.stick-total{position:sticky;left:246px;z-index:2;background:inherit;box-shadow:2px 0 4px -2px rgba(0,0,0,.15)}
 .cat-hdr-sticky{position:sticky;left:0;z-index:2}
 .chdr{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 12px}
 </style>
@@ -221,23 +222,24 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
   // Best pct within this fastest group per round
   const bp={};
   visR.forEach(r=>{let b=-1;reranked.forEach(c=>{const p=parseFloat(c.rounds[r]?.pct||0);if(p>b)b=p;});bp[r]=b>0?b:null;});
-  // Same single-table approach for consistent columns
-  // CREW_W gives the crew name enough room on mobile; table can exceed container width and scroll horizontally
-  const ncols2=2+visR.length*2+(showT?1:0);
+  // Same single-table approach for consistent columns.
+  // Column order: Pos | Bow | Crew | Total (frozen) | per-round Pts+Stat (scrollable)
+  const ncols2=3+visR.length*2+(showT?1:0);
   const CREW_W=130;
-  const fixedW2=56+60+(visR.length*240)+(showT?80:0);
+  const TOTAL_W=70;
+  const fixedW2=56+60+CREW_W+(showT?TOTAL_W:0)+(visR.length*176);
   let h='';
-  h+='<table style="width:'+(fixedW2+CREW_W)+'px;table-layout:fixed;border-collapse:separate;border-spacing:0;margin-top:4px"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
-  visR.forEach(()=>h+='<col style="width:48px"><col style="width:192px">');
-  if(showT)h+='<col style="width:80px">';
+  h+='<table id="ft-table-'+boatKey+'" class="pts-table" style="table-layout:fixed;border-collapse:separate;border-spacing:0;margin-top:4px" data-minw="'+fixedW2+'"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
+  if(showT)h+='<col style="width:'+TOTAL_W+'px">';
+  visR.forEach(()=>h+='<col style="width:46px"><col style="width:130px">');
   h+='</colgroup><tbody>';
   h+='<tr><td colspan="'+ncols2+'" style="padding:0"><div class="cat-hdr">'+boatLabel+'</div></td></tr>';
   h+='<tr style="background:var(--off);border-bottom:1px solid var(--border)">';
   h+='<td class="c chdr stick-pos" style="background:var(--off)">Pos</td>';
   h+='<td class="chdr stick-bow" style="background:var(--off)"></td>';
   h+='<td class="chdr stick-crew" style="background:var(--off)">Crew</td>';
+  if(showT)h+='<td class="r chdr stick-total" style="background:var(--off)">Total</td>';
   visR.forEach(r=>h+='<td colspan="2" class="c chdr" style="border-left:1px solid var(--border)">'+(ROUND_LABELS[r]||r)+'</td>');
-  if(showT)h+='<td class="r chdr">Total</td>';
   h+='</tr>';
   reranked.forEach((crew,i)=>{
     const total=visR.reduce((s,r)=>s+(crew.rounds[r]?.pts||0),0);
@@ -248,6 +250,7 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
     h+='<td class="c stick-pos" style="padding:10px 12px;background:'+bg+'">'+pb(i+1)+'</td>';
     h+='<td class="stick-bow" style="padding:10px 4px 10px 12px;background:'+bg+'"><span class="bow">'+crew.bow+'</span></td>';
     h+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-weight:500;font-size:14px">'+crew.crew+gr+ct+'</span></td>';
+    if(showT)h+='<td class="r stick-total" style="padding:10px 12px;background:'+bg+'"><span class="total-pill">'+total+'</span></td>';
     visR.forEach(r=>{
       const rd=crew.rounds[r];
       const isBest=rd?.pct&&bp[r]&&parseFloat(rd.pct)===bp[r];
@@ -287,6 +290,7 @@ function render(){
     if(!html)html='<div class="empty">No fastest data available</div>';
     document.getElementById('summary').innerHTML='Fastest crews by prognostic %';
     document.getElementById('wrap').innerHTML=html;
+    fixTableWidths();
     return;
   }
   const cats=CAT_ORDER.filter(cat=>{
@@ -296,17 +300,20 @@ function render(){
     return scoring.some(c=>c.cat===cat);
   });
   if(!cats.length){document.getElementById('wrap').innerHTML='<div class="empty">No results match filters</div>';return;}
-  // One shared table for ALL categories so columns are consistent
-  // CREW_W gives the crew name enough room on mobile; table can exceed container width and scroll horizontally
-  const ncols=2+visR.length*2+(showT?1:0);
+  // One shared table for ALL categories so columns are consistent.
+  // Column order: Pos | Bow | Crew | Total (all frozen/sticky) | per-round Pts+Stat (scrollable)
+  const ncols=3+visR.length*2+(showT?1:0);
   const CREW_W=130;
-  const fixedW=56+60+(visR.length*240)+(showT?80:0);
-  // colgroup: pos=56, bow=60, crew=200, per-round pair=240px each, total=80
+  const TOTAL_W=70;
+  const ROUND_W=176; // 46 (pts) + 130 (stat) per round
+  const frozenW=56+60+CREW_W+(showT?TOTAL_W:0);
+  const fixedW=frozenW+(visR.length*ROUND_W);
+  // colgroup: pos=56, bow=60, crew=130, total=70 (if shown), per-round pair=176px each
   let cg='<colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
-  visR.forEach(()=>cg+='<col style="width:48px"><col style="width:192px">');
-  if(showT)cg+='<col style="width:80px">';
+  if(showT)cg+='<col style="width:'+TOTAL_W+'px">';
+  visR.forEach(()=>cg+='<col style="width:46px"><col style="width:130px">');
   cg+='</colgroup>';
-  html='<table style="width:'+(fixedW+CREW_W)+'px;table-layout:fixed;border-collapse:separate;border-spacing:0">'+cg+'<tbody>';
+  html='<table class="pts-table" style="table-layout:fixed;border-collapse:separate;border-spacing:0" data-minw="'+fixedW+'">'+cg+'<tbody>';
   cats.forEach(cat=>{
     const cc=scoring.filter(c=>c.cat===cat).sort((a,b)=>{
       const ta=visR.reduce((s,r)=>s+(a.rounds[r]?.pts||0),0);
@@ -322,8 +329,8 @@ function render(){
     html+='<td class="c chdr stick-pos" style="background:var(--off)">Pos</td>';
     html+='<td class="chdr stick-bow" style="background:var(--off)"></td>';
     html+='<td class="chdr stick-crew" style="background:var(--off)">Crew</td>';
+    if(showT)html+='<td class="r chdr stick-total" style="background:var(--off)">Total</td>';
     visR.forEach(r=>html+='<td colspan="2" class="c chdr" style="border-left:1px solid var(--border)">'+(ROUND_LABELS[r]||r)+'</td>');
-    if(showT)html+='<td class="r chdr">Total</td>';
     html+='</tr>';
     cc.forEach((crew,i)=>{
       const total=visR.reduce((s,r)=>s+(crew.rounds[r]?.pts||0),0);
@@ -333,6 +340,7 @@ function render(){
       html+='<td class="c stick-pos" style="padding:10px 12px;background:'+bg+'">'+pb(i+1)+'</td>';
       html+='<td class="stick-bow" style="padding:10px 4px 10px 12px;background:'+bg+'"><span class="bow">'+crew.bow+'</span></td>';
       html+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-weight:500;font-size:14px">'+crew.crew+gr+'</span></td>';
+      if(showT)html+='<td class="r stick-total" style="padding:10px 12px;background:'+bg+'"><span class="total-pill">'+total+'</span></td>';
       visR.forEach(r=>{
         const rd=crew.rounds[r];
         const isBest=rd?.pct&&bestPct[r]&&parseFloat(rd.pct)===bestPct[r];
@@ -346,7 +354,6 @@ function render(){
           html+='<td style="background:'+bg2+';padding:10px 12px 10px 4px"><span class="rnd-pct" style="color:'+pctCol(rd.pct)+'">'+(rd.pct?rd.pct+'%':'—')+'</span><br><span class="rnd-time">'+(rd.time?'('+rd.time+')':'')+'</span></td>';
         }
       });
-      if(showT)html+='<td class="r" style="padding:10px 12px"><span class="total-pill">'+total+'</span></td>';
       html+='</tr>';
     });
   });
@@ -354,7 +361,21 @@ function render(){
   const rs=visR.map(r=>ROUND_LABELS[r]||r).join(', ');
   document.getElementById('summary').innerHTML='Showing <strong>'+cnt+' crew'+(cnt!==1?'s':'')+'</strong> with points — '+rs;
   document.getElementById('wrap').innerHTML=html;
+  fixTableWidths();
 }
+// Sets each table to the wider of (its natural minimum content width) or (the wrap's
+// available width) — so on desktop it fills the full container, and on narrow mobile
+// screens it stays at its minimum width and the .wrap scrolls horizontally instead of
+// crushing columns.
+function fixTableWidths(){
+  const wrap=document.getElementById('wrap');
+  const avail=wrap.clientWidth;
+  wrap.querySelectorAll('table[data-minw]').forEach(t=>{
+    const minw=parseInt(t.dataset.minw,10)||0;
+    t.style.width=Math.max(avail,minw)+'px';
+  });
+}
+window.addEventListener('resize',()=>{ if(document.getElementById('wrap')) fixTableWidths(); });
 render();
 </script>
 </body>
