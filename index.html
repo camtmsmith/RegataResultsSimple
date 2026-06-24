@@ -224,7 +224,7 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
   // Same single-table approach for consistent columns
   // CREW_W gives the crew name enough room on mobile; table can exceed container width and scroll horizontally
   const ncols2=2+visR.length*2+(showT?1:0);
-  const CREW_W=200;
+  const CREW_W=130;
   const fixedW2=56+60+(visR.length*240)+(showT?80:0);
   let h='';
   h+='<table style="width:'+(fixedW2+CREW_W)+'px;table-layout:fixed;border-collapse:separate;border-spacing:0;margin-top:4px"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
@@ -299,7 +299,7 @@ function render(){
   // One shared table for ALL categories so columns are consistent
   // CREW_W gives the crew name enough room on mobile; table can exceed container width and scroll horizontally
   const ncols=2+visR.length*2+(showT?1:0);
-  const CREW_W=200;
+  const CREW_W=130;
   const fixedW=56+60+(visR.length*240)+(showT?80:0);
   // colgroup: pos=56, bow=60, crew=200, per-round pair=240px each, total=80
   let cg='<colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
