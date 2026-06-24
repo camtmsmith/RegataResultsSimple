@@ -40,6 +40,11 @@ td.c{text-align:center} td.r{text-align:right}
 .rnd-pct{font-size:10px;color:var(--muted)}
 .total-pill{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;padding:2px 12px;border-radius:20px;background:var(--pts-bg);color:var(--pts);min-width:40px;text-align:center}
 .empty{padding:40px;text-align:center;color:var(--muted)}
+/* Sticky first columns so Pos/Bow/Crew stay visible while round data scrolls horizontally */
+.stick-pos{position:sticky;left:0;z-index:2;background:inherit}
+.stick-bow{position:sticky;left:56px;z-index:2;background:inherit}
+.stick-crew{position:sticky;left:116px;z-index:2;background:inherit;box-shadow:2px 0 4px -2px rgba(0,0,0,.15)}
+.cat-hdr-sticky{position:sticky;left:0;z-index:2}
 .chdr{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 12px}
 </style>
 </head>
@@ -219,7 +224,7 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
   // Same single-table approach for consistent columns
   // CREW_W gives the crew name enough room on mobile; table can exceed container width and scroll horizontally
   const ncols2=2+visR.length*2+(showT?1:0);
-  const CREW_W=280;
+  const CREW_W=200;
   const fixedW2=56+60+(visR.length*240)+(showT?80:0);
   let h='';
   h+='<table style="width:100%;min-width:'+(fixedW2+CREW_W)+'px;table-layout:fixed;border-collapse:collapse;margin-top:4px"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
@@ -228,8 +233,8 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
   h+='</colgroup><tbody>';
   h+='<tr><td colspan="'+ncols2+'" style="padding:0"><div class="cat-hdr">'+boatLabel+'</div></td></tr>';
   h+='<tr style="background:var(--off);border-bottom:1px solid var(--border)">';
-  h+='<td class="c chdr">Pos</td>';
-  h+='<td colspan="2" class="chdr">Crew</td>';
+  h+='<td class="c chdr stick-pos" style="background:var(--off)">Pos</td>';
+  h+='<td colspan="2" class="chdr stick-crew" style="background:var(--off)">Crew</td>';
   visR.forEach(r=>h+='<td colspan="2" class="c chdr" style="border-left:1px solid var(--border)">'+(ROUND_LABELS[r]||r)+'</td>');
   if(showT)h+='<td class="r chdr">Total</td>';
   h+='</tr>';
@@ -239,9 +244,9 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
     const ct='<span style="font-size:10px;color:var(--muted);margin-left:5px;font-family:monospace">'+crew.cat+'</span>';
     const bg=i%2===0?'var(--white)':'var(--off)';
     h+='<tr style="background:'+bg+';border-bottom:1px solid var(--border)">';
-    h+='<td class="c" style="padding:10px 12px">'+pb(i+1)+'</td>';
-    h+='<td style="padding:10px 4px 10px 12px"><span class="bow">'+crew.bow+'</span></td>';
-    h+='<td style="padding:10px 12px 10px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-weight:500;font-size:14px">'+crew.crew+gr+ct+'</span></td>';
+    h+='<td class="c stick-pos" style="padding:10px 12px;background:'+bg+'">'+pb(i+1)+'</td>';
+    h+='<td class="stick-bow" style="padding:10px 4px 10px 12px;background:'+bg+'"><span class="bow">'+crew.bow+'</span></td>';
+    h+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-weight:500;font-size:14px">'+crew.crew+gr+ct+'</span></td>';
     visR.forEach(r=>{
       const rd=crew.rounds[r];
       const isBest=rd?.pct&&bp[r]&&parseFloat(rd.pct)===bp[r];
@@ -293,7 +298,7 @@ function render(){
   // One shared table for ALL categories so columns are consistent
   // CREW_W gives the crew name enough room on mobile; table can exceed container width and scroll horizontally
   const ncols=2+visR.length*2+(showT?1:0);
-  const CREW_W=280;
+  const CREW_W=200;
   const fixedW=56+60+(visR.length*240)+(showT?80:0);
   // colgroup: pos=56, bow=60, crew=200, per-round pair=240px each, total=80
   let cg='<colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
@@ -313,8 +318,8 @@ function render(){
     html+='<tr><td colspan="'+ncols+'" style="padding:0"><div class="cat-hdr">'+(m?m.label:cat)+'</div></td></tr>';
     // Column sub-header
     html+='<tr style="background:var(--off);border-bottom:1px solid var(--border)">';
-    html+='<td class="c chdr">Pos</td>';
-    html+='<td colspan="2" class="chdr">Crew</td>';
+    html+='<td class="c chdr stick-pos" style="background:var(--off)">Pos</td>';
+    html+='<td colspan="2" class="chdr stick-crew" style="background:var(--off)">Crew</td>';
     visR.forEach(r=>html+='<td colspan="2" class="c chdr" style="border-left:1px solid var(--border)">'+(ROUND_LABELS[r]||r)+'</td>');
     if(showT)html+='<td class="r chdr">Total</td>';
     html+='</tr>';
@@ -323,9 +328,9 @@ function render(){
       const gr=crew.grade?'<span class="gr">'+crew.grade+'</span>':'';
       const bg=i%2===0?'var(--white)':'var(--off)';
       html+='<tr style="background:'+bg+';border-bottom:1px solid var(--border)">';
-      html+='<td class="c" style="padding:10px 12px">'+pb(i+1)+'</td>';
-      html+='<td style="padding:10px 4px 10px 12px"><span class="bow">'+crew.bow+'</span></td>';
-      html+='<td style="padding:10px 12px 10px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-weight:500;font-size:14px">'+crew.crew+gr+'</span></td>';
+      html+='<td class="c stick-pos" style="padding:10px 12px;background:'+bg+'">'+pb(i+1)+'</td>';
+      html+='<td class="stick-bow" style="padding:10px 4px 10px 12px;background:'+bg+'"><span class="bow">'+crew.bow+'</span></td>';
+      html+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="font-weight:500;font-size:14px">'+crew.crew+gr+'</span></td>';
       visR.forEach(r=>{
         const rd=crew.rounds[r];
         const isBest=rd?.pct&&bestPct[r]&&parseFloat(rd.pct)===bestPct[r];
