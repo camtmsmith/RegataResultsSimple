@@ -48,11 +48,13 @@ td.c{text-align:center} td.r{text-align:right}
 .stick-pos{position:sticky;left:0;z-index:2;background:inherit}
 .stick-bow{position:sticky;left:56px;z-index:2;background:inherit}
 .stick-crew{position:sticky;left:116px;z-index:2;background:inherit}
-/* Tap-to-show tooltip for crew/stroke info — works on touch devices where :hover/title don't fire */
-.crew-name-wrap{position:relative;display:inline-block;cursor:pointer}
-.crew-tip{position:absolute;left:0;top:100%;margin-top:4px;background:var(--navy);color:#fff;font-size:12px;font-weight:500;padding:6px 10px;border-radius:6px;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:50;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .12s,transform .12s;pointer-events:none}
-.crew-tip::before{content:'';position:absolute;bottom:100%;left:14px;border:5px solid transparent;border-bottom-color:var(--navy)}
-.crew-name-wrap:hover .crew-tip,.crew-name-wrap.tip-open .crew-tip{opacity:1;visibility:visible;transform:translateY(0)}
+/* Tap-to-show / hover tooltip for crew/stroke info. Rendered as ONE shared fixed-position
+   element appended to <body> and positioned by JS at click/hover time — this avoids the
+   tooltip being clipped by the crew cell's own overflow:hidden (needed for name truncation). */
+.crew-name-wrap{cursor:pointer}
+#crew-tip-popover{position:fixed;background:var(--navy);color:#fff;font-size:12px;font-weight:500;padding:6px 10px;border-radius:6px;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:999;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .12s,transform .12s;pointer-events:none}
+#crew-tip-popover::before{content:'';position:absolute;bottom:100%;left:14px;border:5px solid transparent;border-bottom-color:var(--navy)}
+#crew-tip-popover.tip-visible{opacity:1;visibility:visible;transform:translateY(0)}
 .stick-total{position:sticky;left:246px;z-index:2;background:inherit;box-shadow:2px 0 4px -2px rgba(0,0,0,.15)}
 .cat-hdr-sticky{position:sticky;left:0;z-index:2}
 .chdr{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 12px}
@@ -189,17 +191,51 @@ function toggleViewFilters(){
   document.getElementById('fg-gender').style.display=isFastest?'none':'flex';
   document.getElementById('fg-boat').style.display=isFastest?'none':'flex';
 }
-// Tap-to-show crew/stroke tooltip — needed on touch devices (iPhone/iPad) where
-// CSS :hover and the title attribute never fire. Tapping a crew name opens its
-// tooltip and closes any other; tapping anywhere else (or the same name again) closes it.
-function toggleTip(el,evt){
-  if(evt)evt.stopPropagation();
-  const wasOpen=el.classList.contains('tip-open');
-  document.querySelectorAll('.crew-name-wrap.tip-open').forEach(w=>w.classList.remove('tip-open'));
-  if(!wasOpen)el.classList.add('tip-open');
+// Crew/stroke tooltip — ONE shared popover element, fixed-positioned via JS at
+// show-time using the trigger's actual screen position. This sidesteps the crew
+// cell's own overflow:hidden (needed for name-truncation ellipsis), which would
+// otherwise clip a tooltip nested inside it. Works via hover on desktop and tap
+// on touch devices (delegated listeners, so it applies to every crew name at once).
+function ensureTipEl(){
+  let el=document.getElementById('crew-tip-popover');
+  if(!el){
+    el=document.createElement('div');
+    el.id='crew-tip-popover';
+    document.body.appendChild(el);
+  }
+  return el;
 }
-document.addEventListener('click',()=>{
-  document.querySelectorAll('.crew-name-wrap.tip-open').forEach(w=>w.classList.remove('tip-open'));
+function showTip(trigger){
+  const el=ensureTipEl();
+  el.textContent=trigger.dataset.tip;
+  const r=trigger.getBoundingClientRect();
+  el.style.left=Math.round(r.left)+'px';
+  el.style.top=Math.round(r.bottom+6)+'px';
+  el.classList.add('tip-visible');
+}
+function hideTip(){
+  const el=document.getElementById('crew-tip-popover');
+  if(el)el.classList.remove('tip-visible');
+}
+document.addEventListener('mouseover',e=>{
+  const t=e.target.closest('.crew-name-wrap');
+  if(t)showTip(t);
+});
+document.addEventListener('mouseout',e=>{
+  const t=e.target.closest('.crew-name-wrap');
+  if(t)hideTip();
+});
+document.addEventListener('click',e=>{
+  const t=e.target.closest('.crew-name-wrap');
+  if(t){
+    e.stopPropagation();
+    const el=ensureTipEl();
+    const isOpenForThis=el.classList.contains('tip-visible')&&el.textContent===t.dataset.tip;
+    hideTip();
+    if(!isOpenForThis)showTip(t);
+  }else{
+    hideTip();
+  }
 });
 function buildCrews(visRounds){
   const m={};
@@ -278,11 +314,11 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
     const bg=i%2===0?'var(--white)':'var(--off)';
     const stroke=repStroke(crew);
     const tipText=crew.crew+(stroke?' — Stroke: '+stroke:'');
-    const tipHtml=stroke?'<span class="crew-tip">'+tipText.replace(/</g,'&lt;')+'</span>':'';
+    const tipAttr=stroke?' class="crew-name-wrap" data-tip="'+tipText.replace(/"/g,'&quot;')+'"':'';
     h+='<tr style="background:'+bg+';border-bottom:1px solid var(--border)">';
     h+='<td class="c stick-pos" style="padding:10px 12px;background:'+bg+'">'+pb(i+1)+'</td>';
     h+='<td class="stick-bow" style="padding:10px 4px 10px 12px;background:'+bg+'"><span class="bow">'+crew.bow+'</span></td>';
-    h+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(stroke?'<span class="crew-name-wrap" onclick="toggleTip(this,event)">':'<span>')+'<span style="font-weight:500;font-size:14px">'+gr+crew.crew+ct+'</span>'+tipHtml+'</span></td>';
+    h+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span'+tipAttr+' style="font-weight:500;font-size:14px">'+gr+crew.crew+ct+'</span></td>';
     if(showT)h+='<td class="r stick-total" style="padding:10px 12px;background:'+bg+'"><span class="total-pill">'+total+'</span></td>';
     visR.forEach(r=>{
       const rd=crew.rounds[r];
@@ -376,11 +412,11 @@ function render(){
       const bg=i%2===0?'var(--white)':'var(--off)';
       const stroke=repStroke(crew);
       const tipText=crew.crew+(stroke?' — Stroke: '+stroke:'');
-      const tipHtml=stroke?'<span class="crew-tip">'+tipText.replace(/</g,'&lt;')+'</span>':'';
+      const tipAttr=stroke?' class="crew-name-wrap" data-tip="'+tipText.replace(/"/g,'&quot;')+'"':'';
       html+='<tr style="background:'+bg+';border-bottom:1px solid var(--border)">';
       html+='<td class="c stick-pos" style="padding:10px 12px;background:'+bg+'">'+pb(i+1)+'</td>';
       html+='<td class="stick-bow" style="padding:10px 4px 10px 12px;background:'+bg+'"><span class="bow">'+crew.bow+'</span></td>';
-      html+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(stroke?'<span class="crew-name-wrap" onclick="toggleTip(this,event)">':'<span>')+'<span style="font-weight:500;font-size:14px">'+gr+crew.crew+'</span>'+tipHtml+'</span></td>';
+      html+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span'+tipAttr+' style="font-weight:500;font-size:14px">'+gr+crew.crew+'</span></td>';
       if(showT)html+='<td class="r stick-total" style="padding:10px 12px;background:'+bg+'"><span class="total-pill">'+total+'</span></td>';
       visR.forEach(r=>{
         const rd=crew.rounds[r];
