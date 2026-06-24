@@ -227,7 +227,7 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
   const CREW_W=200;
   const fixedW2=56+60+(visR.length*240)+(showT?80:0);
   let h='';
-  h+='<table style="width:100%;min-width:'+(fixedW2+CREW_W)+'px;table-layout:fixed;border-collapse:separate;border-spacing:0;margin-top:4px"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
+  h+='<table style="width:'+(fixedW2+CREW_W)+'px;table-layout:fixed;border-collapse:separate;border-spacing:0;margin-top:4px"><colgroup><col style="width:56px"><col style="width:60px"><col style="width:'+CREW_W+'px">';
   visR.forEach(()=>h+='<col style="width:48px"><col style="width:192px">');
   if(showT)h+='<col style="width:80px">';
   h+='</colgroup><tbody>';
@@ -306,7 +306,7 @@ function render(){
   visR.forEach(()=>cg+='<col style="width:48px"><col style="width:192px">');
   if(showT)cg+='<col style="width:80px">';
   cg+='</colgroup>';
-  html='<table style="width:100%;min-width:'+(fixedW+CREW_W)+'px;table-layout:fixed;border-collapse:separate;border-spacing:0">'+cg+'<tbody>';
+  html='<table style="width:'+(fixedW+CREW_W)+'px;table-layout:fixed;border-collapse:separate;border-spacing:0">'+cg+'<tbody>';
   cats.forEach(cat=>{
     const cc=scoring.filter(c=>c.cat===cat).sort((a,b)=>{
       const ta=visR.reduce((s,r)=>s+(a.rounds[r]?.pts||0),0);
