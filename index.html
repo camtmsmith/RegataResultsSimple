@@ -139,15 +139,19 @@ const RAW=[
   ["12","BRISBANE GRAMMARIANS","F","MM8+","R1",0,"17:35.55","77.46","P.Prenzler"],
   ["12","BRISBANE GRAMMARIANS","F","MM8+","R2",0,"13:36.51","100.15","P.Baxter"],
   ["8","COMMERCIAL","E","MM8+","R1",0,"17:42.38","74.99","A.Fanning"],
+  ["8","COMMERCIAL/LOWER CLARENCE","E","MM8+","R2",0,"13:57.99","95.07","P.Rowan [COMM]"],
   ["11","BRISBANE","F","MM8+","R1",0,"18:17.06","74.53","J.McCafferty"],
   ["11","BRISBANE","F","MM8+","R2",0,"14:21.85","94.88","M.Argent"],
   ["2","COMMERCIAL","C","MM8+","R1",0,"17:27.76","73.10","G.Powell"],
   ["2","COMMERCIAL","C","MM8+","R2",0,"15:07.62","84.39","G.Powell"],
   ["6","VIKINGS 2","E","MM8+","R1",0,"19:11.64","69.17","A.Dillon"],
+  ["6","VIKINGS 2","D","MM8+","R2",0,"14:05.19","92.31","I.Boyd"],
   ["28","TOOWONG","H","WM8+","R1",5,"19:04.42","87.49","J.Mills"],
   ["28","TOOWONG","H","WM8+","R2",5,"15:35.78","107.01","T.Carter"],
   ["27","COMMERCIAL","F","WM8+","R1",4,"18:48.21","81.61","K.Parker"],
+  ["27","COMMERCIAL","G","WM8+","R2",4,"15:06.39","105.24","S.Wallace"],
   ["20","TOOWONG/STORM KING","C","WM8+","R1",3,"17:48.47","80.79","C.Dermody [TOOW]"],
+  ["20","TOOWONG/NOOSA","C","WM8+","R2",2,"14:17.06","100.72","S.Carvosso [TOOW]"],
   ["25","BRISBANE","E","WM8+","R1",2,"18:45.95","79.62","F.Curley"],
   ["25","BRISBANE","E","WM8+","R2",3,"14:38.49","102.06","F.Curley"],
   ["23","DRAGONS","D","WM8+","R1",1,"19:15.74","76.01","A.Tracey"],
@@ -157,12 +161,15 @@ const RAW=[
   ["21","BRISBANE & GPS/RIVER CITY WOM..","D","WM8+","R1",0,"21:21.95","68.53","D.Prenzler [BGPS]"],
   ["26","OUTBACK ROWING","E","WM8+","R1",0,"25:07.08","59.50","I.Eyres"],
   ["32","TOOWONG/NOOSA","F","MM4x","R1",5,"17:12.33","81.67","J.King [TOOW]"],
+  ["32","TOOWONG COMPOSITE","F","MM4x","R2",5,"14:06.14","99.63","J.King [TOOW]"],
   ["31","BRISBANE & GPS","E","MM4x","R1",4,"17:46.49","77.00","J.Wright"],
   ["31","BRISBANE & GPS","E","MM4x","R2",4,"13:47.93","99.20","J.Wright"],
   ["30","TOOWONG/ADF ROWING","C","MM4x","R1",3,"18:15.11","72.10","P.Bartley [TOOW]"],
+  ["30","TOOWONG","C","MM4x","R2",3,"14:19.05","91.92","P.Bartley"],
   ["36","DRAGONS","F","MixM4x","R1",5,"18:56.87","78.55","A.Rettie"],
   ["36","DRAGONS","F","MixM4x","R2",5,"14:52.73","100.02","A.Rettie"],
   ["35","DRAGONS","C","MixM4x","R1",4,"20:48.29","67.03","S.Dunlop"],
+  ["35","DRAGONS","A","MixM4x","R2",3,"15:03.60","90.42","F.Moynihan"],
   ["40","UNI OF QLD/TOOWONG","D","WM4x","R1",5,"17:14.23","87.55","S.Kehoe [UQBC]"],
   ["45","COMMERCIAL","C","MM4+/-","R1",5,"16:25.44","82.68","G.Brown"],
   ["46","TOOWONG","E","MM4+/-","R1",4,"17:26.58","80.98","M.Carr"],
@@ -174,17 +181,10 @@ const RAW=[
   ["51","TOOWONG","C","WM1x","R1",5,"26:48.19","63.89","K.Reynolds"],
   ["33","TOOWONG","","M4x","R1",5,"19:22.42","","ATHLETE UNKNOWN"],
   ["33","TOOWONG","","M4x","R2",5,"14:18.18","","L.Bridge"],
-  ["8","COMMERCIAL/LOWER CLARENCE","E","MM8+","R2",0,"13:57.99","95.07","P.Rowan [COMM]"],
-  ["6","VIKINGS 2","D","MM8+","R2",0,"14:05.19","92.31","I.Boyd"],
-  ["27","COMMERCIAL","G","WM8+","R2",4,"15:06.39","105.24","S.Wallace"],
-  ["20","TOOWONG/NOOSA","C","WM8+","R2",2,"14:17.06","100.72","S.Carvosso [TOOW]"],
   ["19","COMMERCIAL/MURWILLUMBAH","D","WM8+","R2",1,"14:51.08","98.59","A.Paynter [COMM]"],
-  ["32","TOOWONG COMPOSITE","F","MM4x","R2",5,"14:06.14","99.63","J.King [TOOW]"],
-  ["30","TOOWONG","C","MM4x","R2",3,"14:19.05","91.92","P.Bartley"],
   ["52","VIKINGS","F","MM4x","R2",2,"15:25.99","91.04","F.Spencer"],
   ["23","DRAGONS","D","WM4x","R2",5,"15:25.89","97.81","L.Ronquest-Ross"],
   ["37","RED LEGS/RIVER CITY WOMENS","D","MixM4x","R2",4,"14:37.72","97.07","R.Dalton [REDLG]"],
-  ["35","DRAGONS","A","MixM4x","R2",3,"15:03.60","90.42","F.Moynihan"],
 ];
 function toggleViewFilters(){
   const isFastest=document.getElementById('sel-view').value==='fastest';
@@ -241,21 +241,31 @@ function buildCrews(visRounds){
   const m={};
   RAW.forEach(([bow,crew,grade,cat,rnd,pts,time,pct,stroke])=>{
     if(!time)return;
-    const key=crew+'||'+grade+'||'+cat;
-    if(!m[key])m[key]={crew,grade,cat,bow,bows:{},rounds:{},strokes:{}};
+    // Key by bow + boat class (NOT crew name/grade) — the same physical entry keeps
+    // accumulating points across rounds even if rowers are substituted and the crew
+    // name or grade letter changes between rounds.
+    const key=(bow||crew)+'||'+cat;
+    if(!m[key])m[key]={crew,grade,cat,bow,bows:{},rounds:{},strokes:{},names:{},grades:{}};
     m[key].bows[rnd]=bow;
+    m[key].names[rnd]=crew;
+    m[key].grades[rnd]=grade;
     m[key].strokes[rnd]=stroke||'';
     m[key].rounds[rnd]={pts,time,pct};
   });
   return Object.values(m);
 }
-// Representative stroke (rower closest to the coxswain) — uses the most recent
-// round that has one recorded, since this seat can change between rounds.
-function repStroke(crew){
-  const keys=Object.keys(crew.strokes||{}).sort();
-  for(let i=keys.length-1;i>=0;i--){ if(crew.strokes[keys[i]]) return crew.strokes[keys[i]]; }
+// Most recent non-empty value across rounds for a per-round dict — used because
+// rowers/grade/crew-name can change between rounds for the same physical entry.
+function mostRecent(dict){
+  const keys=Object.keys(dict||{}).sort();
+  for(let i=keys.length-1;i>=0;i--){ if(dict[keys[i]]) return dict[keys[i]]; }
   return '';
 }
+// Representative stroke (rower closest to the coxswain) — uses the most recent
+// round that has one recorded, since this seat can change between rounds.
+function repStroke(crew){ return mostRecent(crew.strokes); }
+function repName(crew){ return mostRecent(crew.names)||crew.crew; }
+function repGrade(crew){ return mostRecent(crew.grades)||crew.grade; }
 function pctCol(p){if(!p)return'var(--muted)';const n=parseFloat(p);return n>=85?'#15803d':n>=75?'#b45309':'#dc2626';}
 function pb(r){const cls=r===1?'p1':r===2?'p2':r===3?'p3':'pn';return'<span class="pb '+cls+'">'+r+'</span>';}
 function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct){
@@ -309,16 +319,18 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
   h+='</tr>';
   reranked.forEach((crew,i)=>{
     const total=visR.reduce((s,r)=>s+(crew.rounds[r]?.pts||0),0);
-    const gr=crew.grade?'<span class="gr">'+crew.grade+'</span>':'';
+    const name=repName(crew);
+    const grade=repGrade(crew);
+    const gr=grade?'<span class="gr">'+grade+'</span>':'';
     const ct='<span style="font-size:10px;color:var(--muted);margin-left:5px;font-family:monospace">'+crew.cat+'</span>';
     const bg=i%2===0?'var(--white)':'var(--off)';
     const stroke=repStroke(crew);
-    const tipText=crew.crew+(stroke?' — Stroke: '+stroke:'');
+    const tipText=name+(stroke?' — Stroke: '+stroke:'');
     const tipAttr=stroke?' class="crew-name-wrap" data-tip="'+tipText.replace(/"/g,'&quot;')+'"':'';
     h+='<tr style="background:'+bg+';border-bottom:1px solid var(--border)">';
     h+='<td class="c stick-pos" style="padding:10px 12px;background:'+bg+'">'+pb(i+1)+'</td>';
     h+='<td class="stick-bow" style="padding:10px 4px 10px 12px;background:'+bg+'"><span class="bow">'+crew.bow+'</span></td>';
-    h+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span'+tipAttr+' style="font-weight:500;font-size:14px">'+gr+crew.crew+ct+'</span></td>';
+    h+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span'+tipAttr+' style="font-weight:500;font-size:14px">'+gr+name+ct+'</span></td>';
     if(showT)h+='<td class="r stick-total" style="padding:10px 12px;background:'+bg+'"><span class="total-pill">'+total+'</span></td>';
     visR.forEach(r=>{
       const rd=crew.rounds[r];
@@ -408,15 +420,17 @@ function render(){
     html+='</tr>';
     cc.forEach((crew,i)=>{
       const total=visR.reduce((s,r)=>s+(crew.rounds[r]?.pts||0),0);
-      const gr=crew.grade?'<span class="gr">'+crew.grade+'</span>':'';
+      const name=repName(crew);
+      const grade=repGrade(crew);
+      const gr=grade?'<span class="gr">'+grade+'</span>':'';
       const bg=i%2===0?'var(--white)':'var(--off)';
       const stroke=repStroke(crew);
-      const tipText=crew.crew+(stroke?' — Stroke: '+stroke:'');
+      const tipText=name+(stroke?' — Stroke: '+stroke:'');
       const tipAttr=stroke?' class="crew-name-wrap" data-tip="'+tipText.replace(/"/g,'&quot;')+'"':'';
       html+='<tr style="background:'+bg+';border-bottom:1px solid var(--border)">';
       html+='<td class="c stick-pos" style="padding:10px 12px;background:'+bg+'">'+pb(i+1)+'</td>';
       html+='<td class="stick-bow" style="padding:10px 4px 10px 12px;background:'+bg+'"><span class="bow">'+crew.bow+'</span></td>';
-      html+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span'+tipAttr+' style="font-weight:500;font-size:14px">'+gr+crew.crew+'</span></td>';
+      html+='<td class="stick-crew" style="padding:10px 12px 10px 4px;background:'+bg+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span'+tipAttr+' style="font-weight:500;font-size:14px">'+gr+name+'</span></td>';
       if(showT)html+='<td class="r stick-total" style="padding:10px 12px;background:'+bg+'"><span class="total-pill">'+total+'</span></td>';
       visR.forEach(r=>{
         const rd=crew.rounds[r];
