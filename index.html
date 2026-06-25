@@ -277,13 +277,10 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
   const cats=BOAT_CATS[boatKey]||[];
   const pool=allCrews.filter(c=>cats.includes(c.cat)&&visR.some(r=>c.rounds[r]?.pct));
   if(!pool.length)return'';
-  const sorted=pool.slice().sort((a,b)=>{
-    const ba=Math.max(...visR.map(r=>parseFloat(a.rounds[r]?.pct||0)));
-    const bb=Math.max(...visR.map(r=>parseFloat(b.rounds[r]?.pct||0)));
-    return bb-ba;
-  });
-  // Re-assign points by % rank per round
-  const reranked=sorted.map(crew=>{
+  // Re-assign points by % rank per round, then sort by TOTAL points (not raw %) —
+  // once points are shown with a Total column, ranking must match what's displayed.
+  // Best single-round % is used only as a tiebreaker when totals are equal.
+  const reranked=pool.map(crew=>{
     const nr={};
     visR.forEach(r=>{
       if(!crew.rounds[r])return;
@@ -292,7 +289,15 @@ function buildFastestSection(allCrews,boatKey,boatLabel,visR,showT,scale,bestPct
       nr[r]={...crew.rounds[r],pts:pos>=0&&pos<scale.length?scale[pos]:0};
     });
     return{...crew,rounds:nr};
-  }).filter(c=>visR.some(r=>(c.rounds[r]?.pts||0)>0));
+  }).filter(c=>visR.some(r=>(c.rounds[r]?.pts||0)>0))
+    .sort((a,b)=>{
+      const ta=visR.reduce((s,r)=>s+(a.rounds[r]?.pts||0),0);
+      const tb=visR.reduce((s,r)=>s+(b.rounds[r]?.pts||0),0);
+      if(tb!==ta)return tb-ta;
+      const ba=Math.max(...visR.map(r=>parseFloat(a.rounds[r]?.pct||0)));
+      const bb=Math.max(...visR.map(r=>parseFloat(b.rounds[r]?.pct||0)));
+      return bb-ba;
+    });
   if(!reranked.length)return'';
   // Best pct within this fastest group per round
   const bp={};
